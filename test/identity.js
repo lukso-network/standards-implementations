@@ -1,4 +1,5 @@
 const Identity = artifacts.require("Identity");
+const KeyManager = artifacts.require("SimpleKeyManager");
 const { BN, ether, expectRevert } = require("openzeppelin-test-helpers");
 
 contract("Identity", accounts => {
@@ -98,4 +99,65 @@ contract("Identity", accounts => {
       );
     });
   }); //Context interactions
+
+  context("Using key manager as identity owner", async () => {
+    let manager,
+      identity = {};
+    const owner = accounts[6];
+
+    beforeEach(async () => {
+      identity = await Identity.new({ from: owner });
+      manager = await KeyManager.new(identity.address, { from: owner });
+      await identity.changeOwner(manager.address, { from: owner });
+    });
+
+    it("Identity should have owner as manager", async () => {
+      const idOwner = await identity.owner.call();
+
+      assert.equal(idOwner, manager.address, "Addresses should match");
+    });
+
+    it("Key manager can execute on behalf of Idenity", async () => {
+      const dest = accounts[1];
+      const amount = ether("10");
+      const OPERATION_CALL = 0x0;
+
+      //Fund Identity contract
+      await web3.eth.sendTransaction({
+        from: owner,
+        to: identity.address,
+        value: amount
+      });
+
+      // Intial Balances
+      const destBalance = await web3.eth.getBalance(dest);
+      const idBalance = await web3.eth.getBalance(identity.address);
+      const managerBalance = await web3.eth.getBalance(manager.address);
+
+      await manager.execute(OPERATION_CALL, dest, amount, "0x0", {
+        from: owner
+      });
+
+      //Final Balances
+      const destBalanceFinal = await web3.eth.getBalance(dest);
+      const idBalanceFinal = await web3.eth.getBalance(identity.address);
+      const managerBalanceFinal = await web3.eth.getBalance(manager.address);
+
+      assert.equal(
+        managerBalance,
+        managerBalanceFinal,
+        "manager balance shouldn't have changed"
+      );
+
+      assert.isTrue(
+        new BN(destBalance).add(amount).eq(new BN(destBalanceFinal)),
+        "Destination address should have recived amount"
+      );
+
+      assert.isTrue(
+        new BN(idBalance).sub(amount).eq(new BN(idBalanceFinal)),
+        "Identity should have spent amount"
+      );
+    });
+  }); //Context key manager
 });
