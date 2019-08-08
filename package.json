@@ -20,6 +20,9 @@
     "url": "https://github.com/lukso-network/standards-scenarios/issues"
   },
   "homepage": "https://github.com/lukso-network/standards-scenarios#readme",
+  "dependencies": {
+    "truffle": "^5.0.30"
+  },
   "devDependencies": {
     "chai": "^4.2.0",
     "openzeppelin-test-helpers": "^0.4.2"
