@@ -13,7 +13,8 @@ contract("UniversalReciever", accounts => {
     });
 
     it("Can parse inputs correctly", async () => {
-      await caller.callReciever(reciever.address);
+      let tx = await caller.callReciever(reciever.address);
+      console.log(tx);
     });
   });
 });
