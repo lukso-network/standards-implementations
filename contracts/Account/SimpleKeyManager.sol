@@ -1,16 +1,16 @@
 pragma solidity 0.5.10;
 
-import "./Identity.sol";
+import "./Account.sol";
 
 contract SimpleKeyManager {
 
     address public owner;
-    Identity public identity;
+    Account public account;
 
     event Execution(uint256 _operationType, address _to, uint256 _value, bytes _data);
-    constructor(address payable _identity) public {
+    constructor(address payable _account) public {
         owner = msg.sender;
-        identity = Identity(_identity);
+        account = Account(_account);
     }
 
      modifier onlyOwner() {
@@ -19,7 +19,7 @@ contract SimpleKeyManager {
     }
 
     function execute(uint256 _operationType, address _to, uint256 _value, bytes calldata _data) onlyOwner external {
-        identity.execute(_operationType, _to, _value, _data);
+        account.execute(_operationType, _to, _value, _data);
         emit Execution(_operationType, _to, _value, _data);
     }
 

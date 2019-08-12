@@ -2,7 +2,7 @@ pragma solidity 0.5.10;
 
 import "./ERC725.sol";
 
-contract Identity is ERC725 {
+contract Account is ERC725 {
     
     uint256 constant OPERATION_CALL = 0;
     uint256 constant OPERATION_CREATE = 1;

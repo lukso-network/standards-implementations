@@ -1,9 +1,9 @@
 pragma solidity 0.5.10;
 
 import "./Reciever.sol";
-import "../Identity/Identity.sol";
+import "../../Account/Account.sol";
 
-contract IdentityReciever is Identity, Reciever {
+contract AccountReciever is Account, Reciever {
 
     //address Responsible for recieving function
     Reciever public recievingDelegate;
