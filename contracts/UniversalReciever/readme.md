@@ -30,3 +30,21 @@ Gas consumed:
 
 `BasicTypedReciever.sol`: `30892`
 
+#### Other notes on Bare vs Typed
+* The bare reciever will require a diferent parsing function for each type, which may lead to quite large and complex recieving contracts
+* The typed can end up limiting the usability of the reciever due to the constraints.    
+
+
+## Implementing a Reciever
+
+Recivers can be called in two maim ways: with a external or with a delegate call. The ups and downs of each approach is discussed in this section:  
+
+#### Benchmarking gas consumption
+External call gas usage:  34525
+Delegate call gas usage:  34770
+
+### External Reciever
+* Making transaction to reciever makes the call loose the reference for the token address
+* It requires pre-authorization with the account key manager to allow for actionable recieves 
+
+### Delegate Reciever

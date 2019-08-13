@@ -14,7 +14,7 @@ const {
 } = require("openzeppelin-test-helpers");
 
 contract("Recievers", accounts => {
-  context("Call vs DelegateCall", async () => {
+  context("Basic External Call vs DelegateCall", async () => {
     const owner = accounts[2];
     let externalRec,
       delegateRec,
@@ -32,19 +32,6 @@ contract("Recievers", accounts => {
       });
     });
 
-    // it("Execute in correct context", async () => {
-    //   const to = accounts[3];
-    //   const from = accounts[4];
-    //   const amount = ether("10");
-    //   const typeId = web3.utils.asciiToHex("Type");
-    //   const data = web3.utils.asciiToHex("data");
-
-    //   let extTx = await externalRec.recieve(typeId, from, to, amount, data);
-    //   let delTx = await delegateRec.recieve(typeId, from, to, amount, data);
-
-    //   console.log(extTx);
-    // });
-
     it("Basic gas comparison", async () => {
       const to = accounts[3];
       const from = accounts[4];
@@ -59,7 +46,7 @@ contract("Recievers", accounts => {
       console.log("Delegate call gas usage: ", delTx.receipt.gasUsed);
     });
 
-    it("Fires events from correct addresses", async () => {
+    it("Executes in correct context", async () => {
       const to = accounts[3];
       const from = accounts[4];
       const amount = ether("10");
@@ -150,5 +137,5 @@ contract("Recievers", accounts => {
       console.log("Bare reciever gas usage: ", bareTx.receipt.gasUsed);
       console.log("Typed Reciever gas usage: ", typedTx.receipt.gasUsed);
     });
-  });
+  }); // context
 });

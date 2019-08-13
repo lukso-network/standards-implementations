@@ -60,7 +60,7 @@ contract Account is ERC725 {
             revert("wrong operation type");
         }
     }
-
+    event Debool(bool s);
     // copied from GnosisSafe
     // https://github.com/gnosis/safe-contracts/blob/v0.0.2-alpha/contracts/base/Executor.sol
     function executeCall(address to, uint256 value, bytes memory data)
@@ -71,6 +71,7 @@ contract Account is ERC725 {
         assembly {
             success := call(gas, to, value, add(data, 0x20), mload(data), 0, 0)
         }
+        emit Debool(success);
     }
 
     // copied from GnosisSafe
