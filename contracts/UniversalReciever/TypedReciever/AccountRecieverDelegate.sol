@@ -1,9 +1,9 @@
 pragma solidity 0.5.10;
 
-import "./Reciever.sol";
+import "./TypedReciever.sol";
 import "../../Account/Account.sol";
 
-contract AccountReciever is Account, Reciever {
+contract AccountRecieverDelegate is Account, TypedReciever {
 
     //address Responsible for recieving function
     address public recievingDelegate;
@@ -16,7 +16,8 @@ contract AccountReciever is Account, Reciever {
         (bool succ, bytes memory _) = 
         recievingDelegate.delegatecall(abi.encodeWithSignature("recieve(bytes32,address,address,uint256,bytes)", typeId, from, to, amount, data));
         require(succ);
-        emit Received(typeId , from,  to, amount,data);
+        _;
+        emit Recieved(typeId , from,  to, amount,data);
     }
 
 }

@@ -1,9 +1,9 @@
 pragma solidity 0.5.10;
 
-import "./UniversalReciever.sol";
+import "./BareReciever.sol";
 import "../../Account/Account.sol";
 
-contract BasicUniversalReciever is Account, UniversalReciever {
+contract BasicUniversalReciever is Account, BareReciever {
 
     event TokenRecieved(address from, address to, uint256 amount);
 
@@ -25,7 +25,6 @@ contract BasicUniversalReciever is Account, UniversalReciever {
         }
     }
 
-    event D(bytes32 h);
     function recieve(bytes32 typeId, bytes calldata data) external {
         if(acceptedTypes[typeId]){
             (address to, address from,uint amount) = toTokenData(data);
@@ -34,7 +33,6 @@ contract BasicUniversalReciever is Account, UniversalReciever {
         } else {
             revert();
         }
-        emit D(typeId);
     }
 
 }
