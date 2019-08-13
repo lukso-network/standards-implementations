@@ -3,7 +3,7 @@ pragma solidity 0.5.10;
 import "./TypedReciever.sol";
 import "../../Account/Account.sol";
 
-contract AccountRecieverDelegate is Account, TypedReciever {
+contract DelegateReciever is Account, TypedReciever {
 
     //address Responsible for recieving function
     address public recievingDelegate;

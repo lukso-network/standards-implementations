@@ -1,8 +1,8 @@
 const UniversalReciever = artifacts.require("BasicUniversalReciever");
-// const Recieving = artifacts.require("Recieving");
-// const AccountReciever = artifacts.require("AccountReciever");
-// const AccountRecieverDelegate = artifacts.require("AccountRecieverDelegate");
-const Caller = artifacts.require("Caller");
+const Recieving = artifacts.require("Recieving");
+const ExternalReciever = artifacts.require("ExternalReciever");
+const DelegateReciever = artifacts.require("DelegateReciever");
+//const Caller = artifacts.require("Caller");
 const BasicBareReciever = artifacts.require("BasicBareReciever");
 const BasicTypedReciever = artifacts.require("BasicTypedReciever");
 
@@ -14,76 +14,89 @@ const {
 } = require("openzeppelin-test-helpers");
 
 contract("Recievers", accounts => {
-  // context("Call vs DelegateCall", async () => {
-  //   const owner = accounts[2];
-  //   let accReciever,
-  //     delReciever,
-  //     recieving = {};
+  context("Call vs DelegateCall", async () => {
+    const owner = accounts[2];
+    let externalRec,
+      delegateRec,
+      recieving = {};
 
-  //   beforeEach(async () => {
-  //     recieving = await Recieving.new();
-  //     accReciever = await AccountReciever.new({ from: owner });
-  //     delReciever = await AccountRecieverDelegate.new({ from: owner });
-  //     await accReciever.changeRecievingDelegate(recieving.address, {
-  //       from: owner
-  //     });
-  //     await delReciever.changeRecievingDelegate(recieving.address, {
-  //       from: owner
-  //     });
-  //   });
+    beforeEach(async () => {
+      recieving = await Recieving.new();
+      externalRec = await ExternalReciever.new({ from: owner });
+      delegateRec = await DelegateReciever.new({ from: owner });
+      await externalRec.changeRecievingDelegate(recieving.address, {
+        from: owner
+      });
+      await delegateRec.changeRecievingDelegate(recieving.address, {
+        from: owner
+      });
+    });
 
-  //   it("Basic gas comparison", async () => {
-  //     const to = accounts[3];
-  //     const from = accounts[4];
-  //     const amount = ether("10");
-  //     const typeId = web3.utils.asciiToHex("Type");
-  //     const data = web3.utils.asciiToHex("data");
+    // it("Execute in correct context", async () => {
+    //   const to = accounts[3];
+    //   const from = accounts[4];
+    //   const amount = ether("10");
+    //   const typeId = web3.utils.asciiToHex("Type");
+    //   const data = web3.utils.asciiToHex("data");
 
-  //     let callTx = await accReciever.recieve(typeId, from, to, amount, data);
-  //     let delTx = await delReciever.recieve(typeId, from, to, amount, data);
+    //   let extTx = await externalRec.recieve(typeId, from, to, amount, data);
+    //   let delTx = await delegateRec.recieve(typeId, from, to, amount, data);
 
-  //     console.log("Regular call gas usage: ", callTx.receipt.gasUsed);
-  //     console.log("DelegateCall gas usage: ", delTx.receipt.gasUsed);
-  //   });
+    //   console.log(extTx);
+    // });
 
-  //   it("Fires events from correct addresses", async () => {
-  //     const to = accounts[3];
-  //     const from = accounts[4];
-  //     const amount = ether("10");
-  //     const typeId =
-  //       "0x5479706500000000000000000000000000000000000000000000000000000000";
-  //     const data = web3.utils.asciiToHex("data");
+    it("Basic gas comparison", async () => {
+      const to = accounts[3];
+      const from = accounts[4];
+      const amount = ether("10");
+      const typeId = web3.utils.asciiToHex("Type");
+      const data = web3.utils.asciiToHex("data");
 
-  //     let callTx = await accReciever.recieve(typeId, from, to, amount, data);
-  //     let delTx = await delReciever.recieve(typeId, from, to, amount, data);
+      let extTx = await externalRec.recieve(typeId, from, to, amount, data);
+      let delTx = await delegateRec.recieve(typeId, from, to, amount, data);
 
-  //     await expectEvent.inTransaction(
-  //       callTx.receipt.transactionHash,
-  //       Recieving,
-  //       "RecievedCustom",
-  //       (eventArgs = {
-  //         typeId: typeId,
-  //         from: from,
-  //         to: recieving.address,
-  //         amount: amount,
-  //         data: data
-  //       })
-  //     );
+      console.log("External call gas usage: ", extTx.receipt.gasUsed);
+      console.log("Delegate call gas usage: ", delTx.receipt.gasUsed);
+    });
 
-  //     await expectEvent.inTransaction(
-  //       delTx.receipt.transactionHash,
-  //       Recieving,
-  //       "RecievedCustom",
-  //       (eventArgs = {
-  //         typeId: typeId,
-  //         from: from,
-  //         to: delReciever.address,
-  //         amount: amount,
-  //         data: data
-  //       })
-  //     );
-  //   });
-  // }); // Context
+    it("Fires events from correct addresses", async () => {
+      const to = accounts[3];
+      const from = accounts[4];
+      const amount = ether("10");
+      const typeId =
+        "0x5479706500000000000000000000000000000000000000000000000000000000";
+      const data = web3.utils.asciiToHex("data");
+
+      let extTx = await externalRec.recieve(typeId, from, to, amount, data);
+      let delTx = await delegateRec.recieve(typeId, from, to, amount, data);
+
+      await expectEvent.inTransaction(
+        extTx.receipt.transactionHash,
+        Recieving,
+        "RecievedCustom",
+        (eventArgs = {
+          self: recieving.address,
+          msgSender: externalRec.address,
+          from: from,
+          amount: amount,
+          data: data
+        })
+      );
+
+      await expectEvent.inTransaction(
+        delTx.receipt.transactionHash,
+        Recieving,
+        "RecievedCustom",
+        (eventArgs = {
+          self: delegateRec.address,
+          msgSender: accounts[0],
+          from: from,
+          amount: amount,
+          data: data
+        })
+      );
+    });
+  }); // Context
 
   context("Bare reciever vs Typed Reciever", async () => {
     let bareReciever,
