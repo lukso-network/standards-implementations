@@ -16,10 +16,20 @@ contract MockToken is ERC20 {
 
      function transfer(address recipient, uint256 amount) public returns (bool) {
         super.transfer(recipient, amount);
-        TypedReciever tr = TypedReciever(recipient);
-        bytes memory dt = abi.encodePacked((address(this)));
-        tr.recieve(bytes32(0) ,  msg.sender, recipient, amount,dt);
+        if(isContract(recipient)){
+            TypedReciever tr = TypedReciever(recipient);
+            bytes memory dt = abi.encodePacked((address(this)));
+            tr.recieve(bytes32(0) ,  msg.sender, recipient, amount,dt);
+        }
         return true;
+    }
+
+    function isContract(address _addr) internal returns (bool){
+        uint256 size;
+        assembly {
+            size := extcodesize(_addr)
+        }
+        return (size > 0);
     }
 
 }
