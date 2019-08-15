@@ -18,14 +18,14 @@ contract MockToken is ERC20 {
         super.transfer(recipient, amount);
         if(isContract(recipient)){
             TypedReciever tr = TypedReciever(recipient);
-            bytes memory dt = abi.encodePacked((address(this)));
-            tr.recieve(bytes32(0) ,  msg.sender, recipient, amount,dt);
+            tr.recieve(address(this), bytes32(0) ,  msg.sender, recipient, amount, "");
         }
         return true;
     }
 
     function isContract(address _addr) internal returns (bool){
         uint256 size;
+        // solium-disable-next-line security/no-inline-assembly
         assembly {
             size := extcodesize(_addr)
         }

@@ -12,9 +12,9 @@ contract ExternalReciever is Account, TypedReciever {
         externalReciever =  TypedReciever(_newDelegate);
     }
 
-    function recieve(bytes32 typeId , address from, address to, uint256 amount, bytes calldata data) external {
-        externalReciever.recieve(typeId, from, to, amount, data);
-        emit Recieved(typeId , from,  to, amount,data);
+    function recieve(address sender, bytes32 typeId , address from, address to, uint256 amount, bytes calldata data) external {
+        externalReciever.recieve(sender, typeId, from, to, amount, data);
+        emit Recieved(sender, typeId , from,  to, amount,data);
     }
 
 }

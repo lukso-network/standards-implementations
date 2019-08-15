@@ -19,13 +19,13 @@ contract RecieveAndRedirect is TypedReciever{
         coldWallet = _coldwallet;
     }
 
-    function toAddress(bytes memory _bytes) pure internal returns(address _add){
+    // function toAddress(bytes memory _bytes) pure internal returns(address _add){
 
-        // solium-disable-next-line security/no-inline-assembly
-        assembly {
-            _add := mload(add(add(_bytes, 0x14), 0x0))
-        }
-    }
+    //     // solium-disable-next-line security/no-inline-assembly
+    //     assembly {
+    //         _add := mload(add(add(_bytes, 0x14), 0x0))
+    //     }
+    // }
 
     function sendToColdWallet(address token, address recipient, uint256 amount) internal {
         //Calling the keyManager can also become confusing. Here we need to pass the Operation_code as a first parameter,
@@ -36,11 +36,8 @@ contract RecieveAndRedirect is TypedReciever{
         emit SentToWallet(recipient,amount);
     }
     
-    function recieve(bytes32 typeId , address from, address to, uint256 amount, bytes calldata data) external {
-        //When the Account calls this recieving contract we loose the 'msg.sender'(the Token contract) reference,
-        //and it needs to be passed in the data parameter.
-        address token = toAddress(data);
-        sendToColdWallet(token, coldWallet,amount);
+    function recieve(address sender, bytes32 typeId, address from, address to, uint256 amount, bytes calldata data) external {
+        sendToColdWallet(sender, coldWallet,amount);
         emit RecievedCustom(address(this),msg.sender,from,amount,data);
     }
 

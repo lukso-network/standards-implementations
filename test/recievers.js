@@ -39,8 +39,22 @@ contract("Recievers", accounts => {
       const typeId = web3.utils.asciiToHex("Type");
       const data = web3.utils.asciiToHex("data");
 
-      let extTx = await externalRec.recieve(typeId, from, to, amount, data);
-      let delTx = await delegateRec.recieve(typeId, from, to, amount, data);
+      let extTx = await externalRec.recieve(
+        accounts[0],
+        typeId,
+        from,
+        to,
+        amount,
+        data
+      );
+      let delTx = await delegateRec.recieve(
+        accounts[0],
+        typeId,
+        from,
+        to,
+        amount,
+        data
+      );
 
       console.log("External call gas usage: ", extTx.receipt.gasUsed);
       console.log("Delegate call gas usage: ", delTx.receipt.gasUsed);
@@ -54,8 +68,22 @@ contract("Recievers", accounts => {
         "0x5479706500000000000000000000000000000000000000000000000000000000";
       const data = web3.utils.asciiToHex("data");
 
-      let extTx = await externalRec.recieve(typeId, from, to, amount, data);
-      let delTx = await delegateRec.recieve(typeId, from, to, amount, data);
+      let extTx = await externalRec.recieve(
+        accounts[0],
+        typeId,
+        from,
+        to,
+        amount,
+        data
+      );
+      let delTx = await delegateRec.recieve(
+        accounts[0],
+        typeId,
+        from,
+        to,
+        amount,
+        data
+      );
 
       await expectEvent.inTransaction(
         extTx.receipt.transactionHash,
@@ -105,14 +133,22 @@ contract("Recievers", accounts => {
     });
 
     it("Both recievers emit events correctly", async () => {
-      let bareTx = await bareReciever.recieve(typeId, bareData);
-      let typedTx = await typedReciever.recieve(typeId, from, to, amount, data);
+      let bareTx = await bareReciever.recieve(accounts[0], typeId, bareData);
+      let typedTx = await typedReciever.recieve(
+        accounts[0],
+        typeId,
+        from,
+        to,
+        amount,
+        data
+      );
 
       await expectEvent.inTransaction(
         bareTx.receipt.transactionHash,
         BasicBareReciever,
         "TokenRecieved",
         (eventArgs = {
+          token: accounts[0],
           from: from,
           to: to,
           amount: amount
@@ -132,8 +168,15 @@ contract("Recievers", accounts => {
     });
 
     it("Gas comparisson", async () => {
-      let bareTx = await bareReciever.recieve(typeId, bareData);
-      let typedTx = await typedReciever.recieve(typeId, from, to, amount, data);
+      let bareTx = await bareReciever.recieve(accounts[0], typeId, bareData);
+      let typedTx = await typedReciever.recieve(
+        accounts[0],
+        typeId,
+        from,
+        to,
+        amount,
+        data
+      );
       console.log("Bare reciever gas usage: ", bareTx.receipt.gasUsed);
       console.log("Typed Reciever gas usage: ", typedTx.receipt.gasUsed);
     });
