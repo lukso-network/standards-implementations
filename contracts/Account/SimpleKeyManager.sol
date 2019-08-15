@@ -23,13 +23,12 @@ contract SimpleKeyManager {
         allowedExecutor[exec] = allowed;
     }
 
-    function thirdPartyExecute(uint256 _operationType, address _to, uint256 _value, bytes calldata _data) external {
-        require(allowedExecutor[msg.sender], "executor not allowed");
-        account.execute(_operationType, _to, _value, _data);
-        emit Execution(_operationType, _to, _value, _data);
+    function execute(uint256 _operationType, address _to, uint256 _value, bytes calldata _data) external {
+        require(allowedExecutor[msg.sender] || msg.sender == owner, "executor not allowed");
+        _execute(_operationType, _to, _value, _data);
     }
 
-    function execute(uint256 _operationType, address _to, uint256 _value, bytes calldata _data) onlyOwner external {
+    function _execute(uint256 _operationType, address _to, uint256 _value, bytes memory _data) internal {
         account.execute(_operationType, _to, _value, _data);
         emit Execution(_operationType, _to, _value, _data);
     }

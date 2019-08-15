@@ -1,12 +1,12 @@
 pragma solidity 0.5.10;
 
-import "./TypedReciever.sol";
+import "../TypedReciever/TypedReciever.sol";
 import "../../Account/SimpleKeyManager.sol";
 
-/// @title ExternalActionableRecieving
+/// @title RecieveAndRedirect
 /// @author @JGCarv
 /// @notice Contract used for recieving and imediataley redirecting tokens
-contract ExternalActionableRecieving is TypedReciever{
+contract RecieveAndRedirect is TypedReciever{
 
     address public coldWallet;
     SimpleKeyManager public keyManager;
@@ -32,7 +32,7 @@ contract ExternalActionableRecieving is TypedReciever{
         // the destination contract as a second parameter, the ETH(not Token!) amount in the call and finally the enconded
         //data for executing a transfer function
         bytes memory data = abi.encodeWithSelector(0xa9059cbb, recipient, amount);
-        keyManager.thirdPartyExecute(0,token,0, data);
+        keyManager.execute(0,token,0, data);
         emit SentToWallet(recipient,amount);
     }
     

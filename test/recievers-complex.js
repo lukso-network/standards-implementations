@@ -1,9 +1,7 @@
 const MockToken = artifacts.require("MockToken");
 const KeyManager = artifacts.require("SimpleKeyManager");
 const ExternalReciever = artifacts.require("ExternalReciever");
-const ExternalActionableRecieving = artifacts.require(
-  "ExternalActionableRecieving"
-);
+const RecieveAndRedirect = artifacts.require("RecieveAndRedirect");
 
 const {
   BN,
@@ -31,10 +29,7 @@ contract(
         manager = await KeyManager.new(account.address, { from: owner });
 
         // Deploy Recieving
-        recieving = await ExternalActionableRecieving.new(
-          manager.address,
-          owner
-        );
+        recieving = await RecieveAndRedirect.new(manager.address, owner);
         await account.changeRecievingDelegate(recieving.address, {
           from: owner
         });
