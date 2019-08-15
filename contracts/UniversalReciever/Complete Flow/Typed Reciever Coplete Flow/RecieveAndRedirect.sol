@@ -1,7 +1,7 @@
 pragma solidity 0.5.10;
 
-import "../TypedReciever/TypedReciever.sol";
-import "../../Account/SimpleKeyManager.sol";
+import "../../TypedReciever/TypedReciever.sol";
+import "../../../Account/SimpleKeyManager.sol";
 
 /// @title RecieveAndRedirect
 /// @author @JGCarv

@@ -1,14 +1,14 @@
 pragma solidity 0.5.10;
 
-import "../../node_modules/@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import "./BareReciever/BasicUniversalReciever.sol";
-import "./TypedReciever/TypedReciever.sol";
+import "../../../../node_modules/@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "../../BareReciever/BasicUniversalReciever.sol";
+import "../../TypedReciever/TypedReciever.sol";
 
-/// @title MockToken
+/// @title TypedMockToken
 /// @author @JGCarv
 /// @notice Overriden ERC20 to call recipient after transfer
 /// @dev This should be replaced for a ERC777-like token in the future
-contract MockToken is ERC20 {
+contract TypedMockToken is ERC20 {
 
     constructor() public { 
         _mint(msg.sender, 100 ether);

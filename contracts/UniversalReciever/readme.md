@@ -4,10 +4,10 @@ This folder contains research relating to universal recievers, a mechanism to no
 
 
 ### Bare Reciever
-```solidty
+```solidity
 interface BareReciever {
-    event Received(bytes32 typeId , bytes data);
-    function recieve(bytes32 typeId ,bytes calldata data) external;
+    event Received(address sender, bytes32 typeId , bytes data);
+    function recieve(address sender bytes32 typeId ,bytes calldata data) external;
 }
 ```
 The bare reciever accepts only a typeId, which determines the type of the recieving(token,NFT,etc) and a byte array with the information. In the bare reciever, the implementing contract takes care of decoding parameters, which can only be done efficiently using inline assembly.
@@ -15,8 +15,8 @@ The bare reciever accepts only a typeId, which determines the type of the reciev
 ### Typed Reciever
 ```solidity
 interface TypedReciever {
-    event Recieved(bytes32 typeId , address from, address to, uint256 amount, bytes data);
-    function recieve(bytes32 typeId , address from, address to, uint256 amount, bytes calldata data) external;
+    event Recieved(address sender,bytes32 typeId , address from, address to, uint256 amount, bytes data);
+    function recieve(address sender,bytes32 typeId , address from, address to, uint256 amount, bytes calldata data) external;
 }
 ```  
 In the typed reciver, some basic parameter are already baked into the standard and the implementing contract doesn't need to do much work.

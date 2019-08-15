@@ -11,6 +11,7 @@ contract SimpleKeyManager {
     event Execution(uint256 _operationType, address _to, uint256 _value, bytes _data);
     constructor(address payable _account) public {
         owner = msg.sender;
+        allowedExecutor[_account] = true;
         account = Account(_account);
     }
 
