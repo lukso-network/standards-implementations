@@ -48,3 +48,26 @@ Delegate call gas usage:  34770
 * It requires pre-authorization with the account key manager to allow for actionable recieves 
 
 ### Delegate Reciever
+* It can act on the behalf of the account itself
+
+## Implementing a more complex scenario
+In here, we define a possible scenario of transfering a token, where the recivieving contracts gets notified and redirects the recieved token for a third address. For this we're using the `Bare Reciever` and using a modified ERC20 token.
+
+There're three possible implementations
+
+1. Bare Reciever + external call + key manager
+The account makes a external call to the reciever, which makes another external call to the key manager which executes a token trasnfer on behalf of account.
+This whole operations costs around `76739` gas.
+
+2. Bare Reciever + delegate call + key manager
+The account makes a delegate call to the reciever, which makes another external call to the key manager which executes a token trasnfer on behalf of account.
+This whole operations costs around `78406` gas. 
+
+3. Bare Reciever + delegate call + self redirecting
+The account makes a delegate call to the reciever, which makes another external call to the token.
+This whole operations costs around `68134` gas.
+
+* On cases `2` and  `3` the reciever has to inherit from the account contract, so the delegate call is possible without messing with the storage layout. This makes upgradability a bit more error-prone.
+* On cases `1`and `2` the recievers must be pre-authorized in the key manager, with the ability to execute automatically. Some more complex logic can be added, for example, allowing automatic transfer only if the amount is less than `x value`  
+* `3` bypasses the key manager because it assumes that the account can act on behalf of itself. 
+
