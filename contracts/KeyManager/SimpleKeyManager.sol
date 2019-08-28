@@ -1,6 +1,6 @@
 pragma solidity 0.5.10;
 
-import "./Account.sol";
+import "../Account/Account.sol";
 
 contract SimpleKeyManager {
 

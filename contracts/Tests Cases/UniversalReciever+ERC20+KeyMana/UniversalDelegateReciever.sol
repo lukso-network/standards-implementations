@@ -1,10 +1,10 @@
 pragma solidity 0.5.10;
 
-import "../BareReciever/BareReciever.sol";
-import "../../Account/SimpleKeyManager.sol";
+import "../../UniversalReciever/UniversalReciever.sol";
+import "../../KeyManager/SimpleKeyManager.sol";
 import "../../Account/Account.sol";
 
-contract BareDelegateReciever is Account, BareReciever {
+contract UniversalDelegateReciever is Account, UniversalReciever {
     
     address public recievingDelegate;
     bool performDelegate;

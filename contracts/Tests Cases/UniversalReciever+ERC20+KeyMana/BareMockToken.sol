@@ -1,14 +1,14 @@
 pragma solidity 0.5.10;
 
-import "../../../../node_modules/@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import "../../BareReciever/BasicUniversalReciever.sol";
-import "../../TypedReciever/TypedReciever.sol";
+import "../../../node_modules/@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "../../UniversalReciever/BasicUniversalReciever.sol";
+import "../../UniversalReciever/UniversalReciever.sol";
 
-/// @title TypedMockToken
+/// @title BareMockToken
 /// @author @JGCarv
 /// @notice Overriden ERC20 to call recipient after transfer
 /// @dev This should be replaced for a ERC777-like token in the future
-contract TypedMockToken is ERC20 {
+contract BareMockToken is ERC20 {
 
     constructor() public { 
         _mint(msg.sender, 100 ether);
@@ -17,8 +17,9 @@ contract TypedMockToken is ERC20 {
      function transfer(address recipient, uint256 amount) public returns (bool) {
         super.transfer(recipient, amount);
         if(isContract(recipient)){
-            TypedReciever tr = TypedReciever(recipient);
-            tr.recieve(address(this), bytes32(0) ,  msg.sender, recipient, amount, "");
+            UniversalReciever br = UniversalReciever(recipient);
+            bytes memory dt = abi.encodePacked( msg.sender,recipient, amount);
+            br.recieve(address(this), bytes32(0) , dt);
         }
         return true;
     }
@@ -31,5 +32,4 @@ contract TypedMockToken is ERC20 {
         }
         return (size > 0);
     }
-
 }
