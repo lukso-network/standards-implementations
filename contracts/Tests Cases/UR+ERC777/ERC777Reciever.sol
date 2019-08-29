@@ -12,7 +12,6 @@ contract ERC777Reciever is UniversalReciever{
         0xb281fc8c12954d22544db45de3159a39272895b169a852b314f9cc762e44c53b;
 
     function toERC777Data(bytes memory _bytes) internal pure returns(address _operator, address _from, address _to, uint256 _amount) {
-        require(_bytes.length == 72, "data has wrong size");
         // solium-disable-next-line security/no-inline-assembly
         assembly {
             _operator := mload(add(add(_bytes, 0x14), 0x0))
