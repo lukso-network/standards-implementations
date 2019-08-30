@@ -337,7 +337,7 @@ contract ERC777Striped is IERC777, IERC20 {
 
         _callTokensToSend(operator, from, to, amount, userData, operatorData, requireReceptionAck);
 
-        _move(operator, from, to, amount, userData, operatorData);
+       _move(operator, from, to, amount, userData, operatorData);
 
         _callTokensReceived(operator, from, to, amount, userData, operatorData, requireReceptionAck);
     }
@@ -397,7 +397,7 @@ contract ERC777Striped is IERC777, IERC20 {
         _allowances[holder][spender] = value;
         emit Approval(holder, spender, value);
     }
-
+    event DEBUG(uint d);
     /**
      * @dev Call from.tokensToSend() if the interface is registered
      * @param operator address operator requesting the transfer
@@ -418,11 +418,11 @@ contract ERC777Striped is IERC777, IERC20 {
     )
         private
     {
+    
         bytes memory data = abi.encodePacked(operator, from, to, amount, userData, operatorData);
-        if(requireReceptionAck && to.isContract()) {
-            UniversalReciever(to).recieve(address(this), TOKENS_SENDER_INTERFACE_HASH, data);
-        } else {
-            to.call(abi.encodeWithSignature("recieve(address,bytes32,bytes)", address(this), TOKENS_SENDER_INTERFACE_HASH,data));
+        (bool succ, bytes memory ret) = to.call(abi.encodeWithSignature("recieve(address,bytes32,bytes)", address(this), TOKENS_SENDER_INTERFACE_HASH,data));
+        if(requireReceptionAck && from.isContract()) {
+            require(succ, "ERC777: token recipient contract has no implementer for ERC777TokensSender");
         }
     }
 
@@ -450,10 +450,9 @@ contract ERC777Striped is IERC777, IERC20 {
     {
         bytes memory data = abi.encodePacked(operator, from, to, amount, userData, operatorData);
         
+        (bool succ, bytes memory ret) = to.call(abi.encodeWithSignature("recieve(address,bytes32,bytes)", address(this), TOKENS_RECIPIENT_INTERFACE_HASH,data));
         if(requireReceptionAck && to.isContract()) {
-            UniversalReciever(to).recieve(address(this), TOKENS_RECIPIENT_INTERFACE_HASH, data);
-        } else {
-            to.call(abi.encodeWithSignature("recieve(address,bytes32,bytes)", address(this), TOKENS_RECIPIENT_INTERFACE_HASH,data));
+            require(succ, "ERC777: token recipient contract has no implementer for ERC777TokensRecipient");
         }
     }
 }

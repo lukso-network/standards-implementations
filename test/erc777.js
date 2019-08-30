@@ -84,27 +84,53 @@ contract("ERC777", accounts => {
     });
   }); //context
 
-  // context("Usinf Striped ERC777", async () => {
-  //   let registry,
-  //     erc777 = {};
-  //   beforeEach(async () => {
-  //     registry = await ERC1820Registry.new();
-  //   });
-  // });
+  context("Using Stripped ERC777", async () => {
+    const owner = accounts[9];
+    const TOKEN_RECIPIENT =
+      "0xb281fc8c12954d22544db45de3159a39272895b169a852b314f9cc762e44c53b";
+    let account,
+      reciever,
+      erc777striped = {};
+    beforeEach(async () => {
+      erc777striped = await ERC777Striped.new("ERC", "777", [accounts[0]]);
+      account = await RecievingAccount.new({ from: owner });
+      reciever = await ERC777Reciever.new();
+      await account.changeReciever(reciever.address, {
+        from: owner
+      });
+    });
 
-  // it("Deploys correctly", async () => {
-  //   erc777striped = await ERC777Striped.new("ERC", "777", [accounts[0]]);
-  //   erc777 = await ERC777.new("ERC", "777", [], registry.address);
-  // });
+    it("Deploys correctly", async () => {});
+    it("Transfer correctly between regular addresses", async () => {
+      const reciever = accounts[1];
+      let initBal = await erc777striped.balanceOf(reciever);
+      await erc777striped.transfer(reciever, 500);
+      await erc777striped.send(reciever, 500, "0x");
+      let finBal = await erc777striped.balanceOf(reciever);
+      assert.isTrue(finBal.toNumber() > initBal.toNumber());
+    });
+    it("Accepts correctly for implementing interface", async () => {
+      const reciever = account.address;
+      let initBal = await erc777striped.balanceOf(reciever);
+      await erc777striped.send(reciever, 500, "0x");
+      let finBal = await erc777striped.balanceOf(reciever);
 
-  // it("works correctly between pure accounts", async () => {
-  //   const reciever = accounts[2];
-  //   let initBal = await erc777striped.balanceOf(reciever);
-  //   await erc777striped.transfer(accounts[2], 500);
-  //   let finBal = await erc777striped.balanceOf(reciever);
-  //   assert.isTrue(finBal.toNumber() > initBal.toNumber());
-  // });
+      assert.isTrue(finBal.toNumber() > initBal.toNumber());
+    });
+    it("Rejects correctly for implementing interface", async () => {
+      const reciever = await RecievingAccount.new();
+      await expectRevert(
+        erc777striped.send(reciever.address, 500, "0x"),
+        "ERC777: token recipient contract has no implementer for ERC777TokensRecipient"
+      );
+    });
 
-  // it("Transfer tokens correctly for implementing interface", async () => {});
-  // it("Doesn fail for non-implementing contracts", async () => {});
+    it("Forcefully send regardless of interface", async () => {
+      const reciever = await RecievingAccount.new();
+      let initBal = await erc777striped.balanceOf(reciever.address);
+      await erc777striped.transfer(reciever.address, 500);
+      let finBal = await erc777striped.balanceOf(reciever.address);
+      assert.isTrue(finBal.toNumber() > initBal.toNumber());
+    });
+  });
 });
