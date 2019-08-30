@@ -66,7 +66,7 @@ contract BasicUniversalReciever is UniversalReciever {
 
 }
 ```
-But that isin't particularly useful and therefore we provide a incremente implemantion which can be used for recivieng tokens.
+But that isin't particularly useful and therefore we provide a incremented implemantion which can be used for recivieng tokens.
 
 ```solidity
 pragma solidity 0.5.10;
