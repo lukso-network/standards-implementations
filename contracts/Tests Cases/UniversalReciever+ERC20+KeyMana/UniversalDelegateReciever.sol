@@ -17,16 +17,16 @@ contract UniversalDelegateReciever is Account, UniversalReciever {
         recievingDelegate =  _newDelegate;
     }
 
-    function recieve(address sender,bytes32 typeId ,bytes calldata data) external{
+    function universalReciever(bytes32 typeId ,bytes calldata data) external{
         bool succ;
         bytes memory ret;
         if(performDelegate){
-            (succ, ret) = recievingDelegate.delegatecall(abi.encodeWithSignature("recieve(address,bytes32,bytes)", sender,typeId,data));
+            (succ, ret) = recievingDelegate.delegatecall(abi.encodeWithSignature("universalReciever(address,bytes32,bytes)", msg.sender,typeId,data));
         } else {
-            (succ, ret) = recievingDelegate.call(abi.encodeWithSignature("recieve(address,bytes32,bytes)", sender,typeId,data));
+            (succ, ret) = recievingDelegate.call(abi.encodeWithSignature("universalReciever(address,bytes32,bytes)", msg.sender,typeId,data));
         }
         require(succ);
-        emit Received(sender, typeId,data);
+        emit Received(typeId,data);
     }
 
 
