@@ -420,7 +420,7 @@ contract ERC777Striped is IERC777, IERC20 {
     {
     
         bytes memory data = abi.encodePacked(operator, from, to, amount, userData, operatorData);
-        (bool succ, bytes memory ret) = to.call(abi.encodeWithSignature("recieve(address,bytes32,bytes)", address(this), TOKENS_SENDER_INTERFACE_HASH,data));
+        (bool succ, bytes memory ret) = to.call(abi.encodeWithSignature("universalReciever(bytes32,bytes)", TOKENS_SENDER_INTERFACE_HASH,data));
         if(requireReceptionAck && from.isContract()) {
             require(succ, "ERC777: token recipient contract has no implementer for ERC777TokensSender");
         }
@@ -450,7 +450,7 @@ contract ERC777Striped is IERC777, IERC20 {
     {
         bytes memory data = abi.encodePacked(operator, from, to, amount, userData, operatorData);
         
-        (bool succ, bytes memory ret) = to.call(abi.encodeWithSignature("recieve(address,bytes32,bytes)", address(this), TOKENS_RECIPIENT_INTERFACE_HASH,data));
+        (bool succ, bytes memory ret) = to.call(abi.encodeWithSignature("universalReciever(bytes32,bytes)", TOKENS_RECIPIENT_INTERFACE_HASH,data));
         if(requireReceptionAck && to.isContract()) {
             require(succ, "ERC777: token recipient contract has no implementer for ERC777TokensRecipient");
         }

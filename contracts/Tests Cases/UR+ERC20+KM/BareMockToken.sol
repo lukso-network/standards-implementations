@@ -19,7 +19,7 @@ contract BareMockToken is ERC20 {
         if(isContract(recipient)){
             UniversalReciever br = UniversalReciever(recipient);
             bytes memory dt = abi.encodePacked( msg.sender,recipient, amount);
-            br.recieve(address(this), bytes32(0) , dt);
+            br.universalReciever(bytes32(0) , dt);
         }
         return true;
     }

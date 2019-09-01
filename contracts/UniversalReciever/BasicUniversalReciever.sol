@@ -17,10 +17,10 @@ contract BasicUniversalReciever is Account, UniversalReciever {
         }
     }
 
-    function recieve(address sender, bytes32 typeId, bytes calldata data) external {
+    function universalReciever(bytes32 typeId, bytes calldata data) external {
         (address from, address to,uint amount) = toTokenData(data);
-        emit TokenRecieved(sender, from,to, amount);
-        emit Received(sender,typeId,data);
+        emit TokenRecieved(msg.sender, from,to, amount);
+        emit Received(typeId,data);
     }
 
 }

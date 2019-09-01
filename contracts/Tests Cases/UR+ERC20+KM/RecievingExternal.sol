@@ -37,7 +37,7 @@ contract RecievingExternal {
         emit SentTokenToWallet(token,recipient,amount);
     }
     
-    function recieve(address sender, bytes32 typeId, bytes calldata data) external {
+    function universalReciever(address sender, bytes32 typeId, bytes calldata data) external {
         (address from, address to, uint256 amount) = toTokenData(data);
         redirectToAddress(sender, from ,amount);
         emit RecievedTokenTransfer(sender,from,to,amount,data);

@@ -4,9 +4,9 @@ import "../../UniversalReciever/UniversalReciever.sol";
 import "../../Account/Account.sol";
 
 
-contract ERC777Reciever is UniversalReciever{
+contract ERC777Reciever{
 
-    event RecievedERC777(address _operator, address _from, address _to, uint256 _amount);
+    event RecievedERC777(address token, address _operator, address _from, address _to, uint256 _amount);
 
     bytes32 constant private TOKENS_RECIPIENT_INTERFACE_HASH =
         0xb281fc8c12954d22544db45de3159a39272895b169a852b314f9cc762e44c53b;
@@ -22,9 +22,9 @@ contract ERC777Reciever is UniversalReciever{
         }
     }
 
-    function recieve(address sender,bytes32 typeId,bytes calldata data) external{
+    function universalReciever(address sender, bytes32 typeId,bytes calldata data) external{
         require(typeId == TOKENS_RECIPIENT_INTERFACE_HASH);
         (address _operator, address _from, address _to, uint256 _amount) = toERC777Data(data);
-        emit RecievedERC777(_operator, _from, _to, _amount);
+        emit RecievedERC777(sender, _operator, _from, _to, _amount);
     }
 }

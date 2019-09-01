@@ -445,7 +445,7 @@ contract ERC777 is IERC777, IERC20 {
         address implementer = _erc1820.getInterfaceImplementer(from, TOKENS_SENDER_INTERFACE_HASH);
         if (implementer != address(0)) {
             bytes memory data = abi.encodePacked(operator, from, to, amount, userData, operatorData);
-            UniversalReciever(implementer).recieve(address(this), TOKENS_SENDER_INTERFACE_HASH, data);
+            UniversalReciever(implementer).universalReciever(TOKENS_SENDER_INTERFACE_HASH, data);
         }
     }
 
@@ -474,7 +474,7 @@ contract ERC777 is IERC777, IERC20 {
         address implementer = _erc1820.getInterfaceImplementer(to, TOKENS_RECIPIENT_INTERFACE_HASH);
         if (implementer != address(0)) {
             bytes memory data = abi.encodePacked(operator, from, to, amount, userData, operatorData);
-            UniversalReciever(implementer).recieve(address(this), TOKENS_RECIPIENT_INTERFACE_HASH, data);
+            UniversalReciever(implementer).universalReciever(TOKENS_RECIPIENT_INTERFACE_HASH, data);
         } else if (requireReceptionAck) {
             require(!to.isContract(), "ERC777: token recipient contract has no implementer for ERC777TokensRecipient");
         }

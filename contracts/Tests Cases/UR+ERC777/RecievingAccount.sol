@@ -13,9 +13,9 @@ contract RecievingAccount is Account, UniversalReciever, ERC1820Implementer {
         reciever = ERC777Reciever(_newReciever);
     }
 
-    function recieve(address sender,bytes32 typeId ,bytes calldata data) external{
-        reciever.recieve(sender, typeId,data);
-        emit Received(sender, typeId,data);
+    function universalReciever(bytes32 typeId ,bytes calldata data) external{
+        reciever.universalReciever(msg.sender, typeId,data);
+        emit Received(typeId,data);
     }
 
 
