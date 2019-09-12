@@ -22,9 +22,10 @@ contract ERC777Reciever{
         }
     }
 
-    function universalReciever(address sender, bytes32 typeId,bytes calldata data) external{
+    function universalReciever(address sender, bytes32 typeId,bytes calldata data) external returns(bytes32){
         require(typeId == TOKENS_RECIPIENT_INTERFACE_HASH);
         (address _operator, address _from, address _to, uint256 _amount) = toERC777Data(data);
         emit RecievedERC777(sender, _operator, _from, _to, _amount);
+        return typeId;
     }
 }

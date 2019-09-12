@@ -3,13 +3,13 @@ pragma solidity ^0.5.0;
 import "../../node_modules/@openzeppelin/contracts/math/SafeMath.sol";
 import "../../node_modules/@openzeppelin/contracts/utils/Address.sol";
 import "../../node_modules/@openzeppelin/contracts/drafts/Counters.sol";
-import "../../node_modules/@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "../../node_modules/@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "../UniversalReciever/UniversalReciever.sol";
 /**
  * @title ERC721 Non-Fungible Token Standard basic implementation
  * @dev see https://eips.ethereum.org/EIPS/eip-721
  */
-contract ERC721 is IERC20{
+contract ERC721 is IERC721{
     using SafeMath for uint256;
     using Address for address;
     using Counters for Counters.Counter;
