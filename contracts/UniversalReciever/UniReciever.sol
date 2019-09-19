@@ -14,4 +14,10 @@ contract UniReciever {
         return typeId;
     }
 
+    function universalRecieverBytes(bytes32 typeId, bytes calldata data) external returns(bytes memory ret){
+        require(typeId == TOKENS_RECIPIENT_INTERFACE_HASH);
+        emit Received(typeId,data);
+        return abi.encodePacked(typeId);
+    }
+
 }
