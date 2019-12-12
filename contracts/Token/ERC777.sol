@@ -7,7 +7,7 @@ import "../../node_modules/@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "../../node_modules/@openzeppelin/contracts/math/SafeMath.sol";
 import "../../node_modules/@openzeppelin/contracts/utils/Address.sol";
 import "../../node_modules/@openzeppelin/contracts/introspection/IERC1820Registry.sol";
-import "../UniversalReciever/UniversalReciever.sol";
+import "../UniversalReceiver/LSP1_UniversalReceiver.sol";
 
 
 /**
@@ -445,7 +445,7 @@ contract ERC777 is IERC777, IERC20 {
         address implementer = _erc1820.getInterfaceImplementer(from, TOKENS_SENDER_INTERFACE_HASH);
         if (implementer != address(0)) {
             bytes memory data = abi.encodePacked(operator, from, to, amount, userData, operatorData);
-            UniversalReciever(implementer).universalReciever(TOKENS_SENDER_INTERFACE_HASH, data);
+            UniversalReceiver(implementer).universalReceiver(TOKENS_SENDER_INTERFACE_HASH, data);
         }
     }
 
@@ -474,7 +474,7 @@ contract ERC777 is IERC777, IERC20 {
         address implementer = _erc1820.getInterfaceImplementer(to, TOKENS_RECIPIENT_INTERFACE_HASH);
         if (implementer != address(0)) {
             bytes memory data = abi.encodePacked(operator, from, to, amount, userData, operatorData);
-            UniversalReciever(implementer).universalReciever(TOKENS_RECIPIENT_INTERFACE_HASH, data);
+            UniversalReceiver(implementer).universalReceiver(TOKENS_RECIPIENT_INTERFACE_HASH, data);
         } else if (requireReceptionAck) {
             require(!to.isContract(), "ERC777: token recipient contract has no implementer for ERC777TokensRecipient");
         }

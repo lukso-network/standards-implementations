@@ -1,12 +1,12 @@
 pragma solidity 0.5.10;
 
-import "../../UniversalReciever/UniversalReciever.sol";
+import "../../UniversalReceiver/LSP1_UniversalReceiver.sol";
 import "../../Account/Account.sol";
 
 
-contract ERC777Reciever{
+contract ERC777Receiver{
 
-    event RecievedERC777(address token, address _operator, address _from, address _to, uint256 _amount);
+    event ReceivedERC777(address token, address _operator, address _from, address _to, uint256 _amount);
 
     bytes32 constant private TOKENS_RECIPIENT_INTERFACE_HASH =
         0xb281fc8c12954d22544db45de3159a39272895b169a852b314f9cc762e44c53b;
@@ -22,10 +22,10 @@ contract ERC777Reciever{
         }
     }
 
-    function universalReciever(address sender, bytes32 typeId,bytes calldata data) external returns(bytes32){
+    function universalReceiver(address sender, bytes32 typeId,bytes calldata data) external returns(bytes32){
         require(typeId == TOKENS_RECIPIENT_INTERFACE_HASH);
         (address _operator, address _from, address _to, uint256 _amount) = toERC777Data(data);
-        emit RecievedERC777(sender, _operator, _from, _to, _amount);
+        emit ReceivedERC777(sender, _operator, _from, _to, _amount);
         return typeId;
     }
 }

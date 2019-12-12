@@ -4,7 +4,7 @@ import "../../node_modules/@openzeppelin/contracts/math/SafeMath.sol";
 import "../../node_modules/@openzeppelin/contracts/utils/Address.sol";
 import "../../node_modules/@openzeppelin/contracts/drafts/Counters.sol";
 import "../../node_modules/@openzeppelin/contracts/token/ERC721/IERC721.sol";
-import "../UniversalReciever/UniversalReciever.sol";
+import "../UniversalReceiver/LSP1_UniversalReceiver.sol";
 /**
  * @title ERC721 Non-Fungible Token Standard basic implementation
  * @dev see https://eips.ethereum.org/EIPS/eip-721
@@ -328,7 +328,7 @@ contract ERC721 is IERC721{
             return true;
         }
         bytes memory data = abi.encodePacked(msg.sender, from, tokenId, _data);
-        (bool succ,) = to.call(abi.encodeWithSignature("universalReciever(bytes32,bytes)", bytes32(_INTERFACE_ID_ERC721),data));
+        (bool succ,) = to.call(abi.encodeWithSignature("universalReceiver(bytes32,bytes)", bytes32(_INTERFACE_ID_ERC721),data));
         return succ;
     }
 

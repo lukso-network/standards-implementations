@@ -4,11 +4,11 @@ import "../../node_modules/@openzeppelin/contracts/token/ERC777/IERC777.sol";
 import "../../node_modules/@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "../../node_modules/@openzeppelin/contracts/math/SafeMath.sol";
 import "../../node_modules/@openzeppelin/contracts/utils/Address.sol";
-import "../UniversalReciever/UniversalReciever.sol";
+import "../UniversalReceiver/LSP1_UniversalReceiver.sol";
 
 /// @title BareMockToken
 /// @author @JGCarv
-/// @notice Overriden ERC20 to call recipient after transfer
+/// @notice Overridden ERC20 to call recipient after transfer
 /// @dev This should be replaced for a ERC777-like token in the future
 contract ERC777Striped is IERC777, IERC20 {
     using SafeMath for uint256;
@@ -420,7 +420,7 @@ contract ERC777Striped is IERC777, IERC20 {
     {
     
         bytes memory data = abi.encodePacked(operator, from, to, amount, userData, operatorData);
-        (bool succ, bytes memory ret) = to.call(abi.encodeWithSignature("universalReciever(bytes32,bytes)", TOKENS_SENDER_INTERFACE_HASH,data));
+        (bool succ, bytes memory ret) = to.call(abi.encodeWithSignature("universalReceiver(bytes32,bytes)", TOKENS_SENDER_INTERFACE_HASH,data));
         if(requireReceptionAck && from.isContract()) {
             bytes32 returnHash;
             assembly {
@@ -454,7 +454,7 @@ contract ERC777Striped is IERC777, IERC20 {
     {
         bytes memory data = abi.encodePacked(operator, from, to, amount, userData, operatorData);
     
-        (bool succ, bytes memory ret) = to.call(abi.encodeWithSignature("universalReciever(bytes32,bytes)", TOKENS_RECIPIENT_INTERFACE_HASH,data));
+        (bool succ, bytes memory ret) = to.call(abi.encodeWithSignature("universalReceiver(bytes32,bytes)", TOKENS_RECIPIENT_INTERFACE_HASH,data));
         bytes32 returnHash;
         assembly {
             returnHash := mload(add(ret, 32))

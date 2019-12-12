@@ -7,13 +7,13 @@ contract Universal165Query {
     function doesContractImplementInterface(address _contract, bytes32 _typeId) external returns (bool) {
         bool success;
 
-        (success, ) = _contract.call(abi.encodeWithSignature("universalReciever(bytes32, bytes)", ERC165ID, ""));
+        (success, ) = _contract.call(abi.encodeWithSignature("universalReceiver(bytes32, bytes)", ERC165ID, ""));
         if(!success) { return false; }
 
-        (success, ) = _contract.call(abi.encodeWithSignature("universalReciever(bytes32, bytes)", InvalidID, ""));
+        (success, ) = _contract.call(abi.encodeWithSignature("universalReceiver(bytes32, bytes)", InvalidID, ""));
         if(success) { return false; }
 
-        (success, ) = _contract.call(abi.encodeWithSignature("universalReciever(bytes32, bytes)", _typeId, ""));
+        (success, ) = _contract.call(abi.encodeWithSignature("universalReceiver(bytes32, bytes)", _typeId, ""));
         return success;
     }
 }
