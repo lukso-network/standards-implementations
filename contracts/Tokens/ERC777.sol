@@ -7,7 +7,7 @@ import "../../node_modules/@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "../../node_modules/@openzeppelin/contracts/math/SafeMath.sol";
 import "../../node_modules/@openzeppelin/contracts/utils/Address.sol";
 import "../../node_modules/@openzeppelin/contracts/introspection/IERC1820Registry.sol";
-import "../UniversalReceiver/LSP1_UniversalReceiver.sol";
+import "../_LSPs/LSP1_UniversalReceiver.sol";
 
 
 /**

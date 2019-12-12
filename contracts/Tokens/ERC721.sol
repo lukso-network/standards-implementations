@@ -4,7 +4,7 @@ import "../../node_modules/@openzeppelin/contracts/math/SafeMath.sol";
 import "../../node_modules/@openzeppelin/contracts/utils/Address.sol";
 import "../../node_modules/@openzeppelin/contracts/drafts/Counters.sol";
 import "../../node_modules/@openzeppelin/contracts/token/ERC721/IERC721.sol";
-import "../UniversalReceiver/LSP1_UniversalReceiver.sol";
+import "../_LSPs/LSP1_UniversalReceiver.sol";
 /**
  * @title ERC721 Non-Fungible Token Standard basic implementation
  * @dev see https://eips.ethereum.org/EIPS/eip-721

@@ -1,6 +1,6 @@
 pragma solidity 0.5.10;
 
-import "./ERC725.sol";
+import "../_ERCS/ERC725.sol";
 
 contract Account is ERC725 {
 
@@ -39,7 +39,7 @@ contract Account is ERC725 {
         return store[_key];
     }
 
-    function setData(bytes32 _key, bytes calldata _value)
+    function setData(bytes32 _key, bytes memory _value)
     public
     onlyOwner
     {
@@ -47,7 +47,7 @@ contract Account is ERC725 {
         emit DataChanged(_key, _value);
     }
 
-    function execute(uint256 _operationType, address _to, uint256 _value, bytes calldata _data)
+    function execute(uint256 _operationType, address _to, uint256 _value, bytes memory _data)
     public
     onlyOwner
     {

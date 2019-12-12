@@ -5,8 +5,8 @@ interface ERC725 {
     event OwnerChanged(address indexed ownerAddress);
     event ContractCreated(address indexed contractAddress);
 
-    function changeOwner(address _owner) public;
-    function getData(bytes32 _key) public view returns (bytes memory _value);
-    function setData(bytes32 _key, bytes calldata _value) public;
-    function execute(uint256 _operationType, address _to, uint256 _value, bytes calldata _data) public;
+    function changeOwner(address _owner) external;
+    function getData(bytes32 _key) external view returns (bytes memory _value);
+    function setData(bytes32 _key, bytes calldata _value) external;
+    function execute(uint256 _operationType, address _to, uint256 _value, bytes calldata _data) external;
 }

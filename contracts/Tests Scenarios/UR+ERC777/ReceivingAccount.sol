@@ -1,7 +1,7 @@
 pragma solidity 0.5.10;
 
 import "./ERC777Receiver.sol";
-import "../../UniversalReceiver/LSP1_UniversalReceiver.sol";
+import "../../_LSPs/LSP1_UniversalReceiver.sol";
 import "../../../node_modules/@openzeppelin/contracts/introspection/ERC1820Implementer.sol";
 import "../../Account/Account.sol";
 
