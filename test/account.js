@@ -1,163 +1,163 @@
 const Account = artifacts.require("Account");
 const KeyManager = artifacts.require("SimpleKeyManager");
-const { BN, ether, expectRevert } = require("openzeppelin-test-helpers");
+const {BN, ether, expectRevert} = require("openzeppelin-test-helpers");
 
 contract("Account", accounts => {
-  context("Account Deployment", async () => {
-    it("Deploys correctly", async () => {
-      const owner = accounts[2];
-      const account = await Account.new({ from: owner });
+    context("Account Deployment", async () => {
+        it("Deploys correctly", async () => {
+            const owner = accounts[2];
+            const account = await Account.new({from: owner});
 
-      const idOwner = await account.owner.call();
+            const idOwner = await account.owner.call();
 
-      assert.equal(idOwner, owner, "Addresses should match");
-    });
-  });
-
-  context("Interactions with Account contracts", async () => {
-    const owner = accounts[3];
-    const newOwner = accounts[5];
-    let account = {};
-
-    beforeEach(async () => {
-      account = await Account.new({ from: owner });
+            assert.equal(idOwner, owner, "Addresses should match");
+        });
     });
 
-    it("Uprade ownership correctly", async () => {
-      await account.changeOwner(newOwner, { from: owner });
-      const idOwner = await account.owner.call();
+    context("Interactions with Account contracts", async () => {
+        const owner = accounts[3];
+        const newOwner = accounts[5];
+        let account = {};
 
-      assert.equal(idOwner, newOwner, "Addresses should match");
-    });
+        beforeEach(async () => {
+            account = await Account.new({from: owner});
+        });
 
-    it("Refuse upgrades from non-onwer", async () => {
-      await expectRevert(
-        account.changeOwner(newOwner, { from: newOwner }),
-        "only-owner-allowed"
-      );
-    });
+        it("Uprade ownership correctly", async () => {
+            await account.changeOwner(newOwner, {from: owner});
+            const idOwner = await account.owner.call();
 
-    it("Owner can set data", async () => {
-      const key = web3.utils.asciiToHex("Important Data");
-      const data = web3.utils.asciiToHex("Important Data");
+            assert.equal(idOwner, newOwner, "Addresses should match");
+        });
 
-      await account.setData(key, data, { from: owner });
+        it("Refuse upgrades from non-onwer", async () => {
+            await expectRevert(
+                account.changeOwner(newOwner, {from: newOwner}),
+                "only-owner-allowed"
+            );
+        });
 
-      let fetchedData = await account.getData(key);
+        it("Owner can set data", async () => {
+            const key = web3.utils.asciiToHex("Important Data");
+            const data = web3.utils.asciiToHex("Important Data");
 
-      assert.equal(data, fetchedData);
-    });
+            await account.setData(key, data, {from: owner});
 
-    it("Fails when non-owner sets data", async () => {
-      const key = web3.utils.asciiToHex("Important Data");
-      const data = web3.utils.asciiToHex("Important Data");
+            let fetchedData = await account.getData(key);
 
-      await expectRevert(
-        account.setData(key, data, { from: newOwner }),
-        "only-owner-allowed"
-      );
-    });
+            assert.equal(data, fetchedData);
+        });
 
-    it("Allows owner to execute calls", async () => {
-      const dest = accounts[6];
-      const amount = ether("10");
-      const OPERATION_CALL = 0x0;
+        it("Fails when non-owner sets data", async () => {
+            const key = web3.utils.asciiToHex("Important Data");
+            const data = web3.utils.asciiToHex("Important Data");
 
-      await web3.eth.sendTransaction({
-        from: owner,
-        to: account.address,
-        value: amount
-      });
+            await expectRevert(
+                account.setData(key, data, {from: newOwner}),
+                "only-owner-allowed"
+            );
+        });
 
-      const destBalance = await web3.eth.getBalance(dest);
+        it("Allows owner to execute calls", async () => {
+            const dest = accounts[6];
+            const amount = ether("10");
+            const OPERATION_CALL = 0x0;
 
-      await account.execute(OPERATION_CALL, dest, amount, "0x0", {
-        from: owner
-      });
+            await web3.eth.sendTransaction({
+                from: owner,
+                to: account.address,
+                value: amount
+            });
 
-      const finalBalance = await web3.eth.getBalance(dest);
+            const destBalance = await web3.eth.getBalance(dest);
 
-      assert.isTrue(new BN(destBalance).add(amount).eq(new BN(finalBalance)));
-    });
+            await account.execute(OPERATION_CALL, dest, amount, "0x0", {
+                from: owner
+            });
 
-    it("Fails with non-owner executing", async () => {
-      const dest = accounts[6];
-      const amount = ether("10");
-      const OPERATION_CALL = 0x0;
+            const finalBalance = await web3.eth.getBalance(dest);
 
-      await web3.eth.sendTransaction({
-        from: owner,
-        to: account.address,
-        value: amount
-      });
+            assert.isTrue(new BN(destBalance).add(amount).eq(new BN(finalBalance)));
+        });
 
-      await expectRevert(
-        account.execute(OPERATION_CALL, dest, amount, "0x0", {
-          from: newOwner
-        }),
-        "only-owner-allowed"
-      );
-    });
-  }); //Context interactions
+        it("Fails with non-owner executing", async () => {
+            const dest = accounts[6];
+            const amount = ether("10");
+            const OPERATION_CALL = 0x0;
 
-  context("Using key manager as Account owner", async () => {
-    let manager,
-      account = {};
-    const owner = accounts[6];
+            await web3.eth.sendTransaction({
+                from: owner,
+                to: account.address,
+                value: amount
+            });
 
-    beforeEach(async () => {
-      account = await Account.new({ from: owner });
-      manager = await KeyManager.new(account.address, { from: owner });
-      await account.changeOwner(manager.address, { from: owner });
-    });
+            await expectRevert(
+                account.execute(OPERATION_CALL, dest, amount, "0x0", {
+                    from: newOwner
+                }),
+                "only-owner-allowed"
+            );
+        });
+    }); //Context interactions
 
-    it("Account should have owner as manager", async () => {
-      const idOwner = await account.owner.call();
+    context("Using key manager as Account owner", async () => {
+        let manager,
+            account = {};
+        const owner = accounts[6];
 
-      assert.equal(idOwner, manager.address, "Addresses should match");
-    });
+        beforeEach(async () => {
+            account = await Account.new({from: owner});
+            manager = await KeyManager.new(account.address, {from: owner});
+            await account.changeOwner(manager.address, {from: owner});
+        });
 
-    it("Key manager can execute on behalf of Idenity", async () => {
-      const dest = accounts[1];
-      const amount = ether("10");
-      const OPERATION_CALL = 0x0;
+        it("Account should have owner as manager", async () => {
+            const idOwner = await account.owner.call();
 
-      //Fund Account contract
-      await web3.eth.sendTransaction({
-        from: owner,
-        to: account.address,
-        value: amount
-      });
+            assert.equal(idOwner, manager.address, "Addresses should match");
+        });
 
-      // Intial Balances
-      const destBalance = await web3.eth.getBalance(dest);
-      const idBalance = await web3.eth.getBalance(account.address);
-      const managerBalance = await web3.eth.getBalance(manager.address);
+        it("Key manager can execute on behalf of Idenity", async () => {
+            const dest = accounts[1];
+            const amount = ether("10");
+            const OPERATION_CALL = 0x0;
 
-      await manager.execute(OPERATION_CALL, dest, amount, "0x0", {
-        from: owner
-      });
+            //Fund Account contract
+            await web3.eth.sendTransaction({
+                from: owner,
+                to: account.address,
+                value: amount
+            });
 
-      //Final Balances
-      const destBalanceFinal = await web3.eth.getBalance(dest);
-      const idBalanceFinal = await web3.eth.getBalance(account.address);
-      const managerBalanceFinal = await web3.eth.getBalance(manager.address);
+            // Intial Balances
+            const destBalance = await web3.eth.getBalance(dest);
+            const idBalance = await web3.eth.getBalance(account.address);
+            const managerBalance = await web3.eth.getBalance(manager.address);
 
-      assert.equal(
-        managerBalance,
-        managerBalanceFinal,
-        "manager balance shouldn't have changed"
-      );
+            await manager.execute(OPERATION_CALL, dest, amount, "0x0", {
+                from: owner
+            });
 
-      assert.isTrue(
-        new BN(destBalance).add(amount).eq(new BN(destBalanceFinal)),
-        "Destination address should have recived amount"
-      );
+            //Final Balances
+            const destBalanceFinal = await web3.eth.getBalance(dest);
+            const idBalanceFinal = await web3.eth.getBalance(account.address);
+            const managerBalanceFinal = await web3.eth.getBalance(manager.address);
 
-      assert.isTrue(
-        new BN(idBalance).sub(amount).eq(new BN(idBalanceFinal)),
-        "Account should have spent amount"
-      );
-    });
-  }); //Context key manager
+            assert.equal(
+                managerBalance,
+                managerBalanceFinal,
+                "manager balance shouldn't have changed"
+            );
+
+            assert.isTrue(
+                new BN(destBalance).add(amount).eq(new BN(destBalanceFinal)),
+                "Destination address should have recived amount"
+            );
+
+            assert.isTrue(
+                new BN(idBalance).sub(amount).eq(new BN(idBalanceFinal)),
+                "Account should have spent amount"
+            );
+        });
+    }); //Context key manager
 });
