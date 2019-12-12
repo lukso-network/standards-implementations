@@ -27,6 +27,8 @@
   "devDependencies": {
     "chai": "^4.2.0",
     "eth-gas-reporter": "^0.2.10",
+    "ethereumjs-tx": "^2.1.0",
+    "ethereumjs-util": "^6.1.0",
     "openzeppelin-test-helpers": "^0.4.2"
   }
 }
