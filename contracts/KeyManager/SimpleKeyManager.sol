@@ -15,12 +15,12 @@ contract SimpleKeyManager {
         account = Account(_account);
     }
 
-     modifier onlyOwner() {
+    modifier onlyOwner() {
         require(msg.sender == owner, "only-owner-allowed");
         _;
     }
 
-    function addExecutor(address exec, bool allowed) external onlyOwner  {
+    function addExecutor(address exec, bool allowed) external onlyOwner {
         allowedExecutor[exec] = allowed;
     }
 
