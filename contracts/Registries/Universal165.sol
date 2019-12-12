@@ -1,9 +1,9 @@
 pragma solidity 0.5.10;
 
-import "../_LSPs/LSP1_UniversalReceiver.sol";
+import "../_LSPs/ILSP1_UniversalReceiver.sol";
 
 
-contract Universal165 is UniversalReceiver {
+contract Universal165 is IUniversalReceiver {
 
     mapping(bytes32 => bool) public supportedHashes;
 

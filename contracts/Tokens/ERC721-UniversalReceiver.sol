@@ -4,12 +4,12 @@ import "../../node_modules/@openzeppelin/contracts/math/SafeMath.sol";
 import "../../node_modules/@openzeppelin/contracts/utils/Address.sol";
 import "../../node_modules/@openzeppelin/contracts/drafts/Counters.sol";
 import "../../node_modules/@openzeppelin/contracts/token/ERC721/IERC721.sol";
-import "../_LSPs/LSP1_UniversalReceiver.sol";
+import "../_LSPs/ILSP1_UniversalReceiver.sol";
 /**
  * @title ERC721 Non-Fungible Token Standard basic implementation
  * @dev see https://eips.ethereum.org/EIPS/eip-721
  */
-contract ERC721 is IERC721{
+contract ERC721 is IERC721 {
     using SafeMath for uint256;
     using Address for address;
     using Counters for Counters.Counter;
@@ -21,16 +21,16 @@ contract ERC721 is IERC721{
     bytes4 private constant _ERC721_RECEIVED = 0x150b7a02;
 
     // Mapping from token ID to owner
-    mapping (uint256 => address) private _tokenOwner;
+    mapping(uint256 => address) private _tokenOwner;
 
     // Mapping from token ID to approved address
-    mapping (uint256 => address) private _tokenApprovals;
+    mapping(uint256 => address) private _tokenApprovals;
 
     // Mapping from owner to number of owned token
-    mapping (address => Counters.Counter) private _ownedTokensCount;
+    mapping(address => Counters.Counter) private _ownedTokensCount;
 
     // Mapping from owner to operator approvals
-    mapping (address => mapping (address => bool)) private _operatorApprovals;
+    mapping(address => mapping(address => bool)) private _operatorApprovals;
 
     /*
      *     bytes4(keccak256('balanceOf(address)')) == 0x70a08231
@@ -322,13 +322,13 @@ contract ERC721 is IERC721{
      * @return bool whether the call correctly returned the expected magic value
      */
     function _checkOnERC721Received(address from, address to, uint256 tokenId, bytes memory _data)
-        internal returns (bool)
+    internal returns (bool)
     {
         if (!to.isContract()) {
             return true;
         }
         bytes memory data = abi.encodePacked(msg.sender, from, tokenId, _data);
-        (bool succ,) = to.call(abi.encodeWithSignature("universalReceiver(bytes32,bytes)", bytes32(_INTERFACE_ID_ERC721),data));
+        (bool succ,) = to.call(abi.encodeWithSignature("universalReceiver(bytes32,bytes)", bytes32(_INTERFACE_ID_ERC721), data));
         return succ;
     }
 

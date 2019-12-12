@@ -1,7 +1,7 @@
 const ERC777Striped = artifacts.require("ERC777Striped");
 const ERC777 = artifacts.require("ERC777");
 const ERC1820Registry = artifacts.require("ERC1820Registry");
-const RecievingAccount = artifacts.require("RecievingAccount");
+const ReceivingAccount = artifacts.require("ReceivingAccount");
 const ERC777Receiver = artifacts.require("ERC777Receiver");
 
 const {expectRevert, expectEvent} = require("openzeppelin-test-helpers");
@@ -24,7 +24,7 @@ contract("ERC777", accounts => {
         });
         beforeEach(async () => {
             erc777striped = await ERC777Striped.new("ERC", "777", [accounts[0]]);
-            account = await RecievingAccount.new({from: owner});
+            account = await ReceivingAccount.new({from: owner});
             receiver = await ERC777Receiver.new();
             await account.changeReceiver(receiver.address, {
                 from: owner
@@ -63,7 +63,7 @@ contract("ERC777", accounts => {
             assert.isTrue(finBal.toNumber() > initBal.toNumber());
         });
         it("Rejects correctly for implementing interface", async () => {
-            const receiver = await RecievingAccount.new();
+            const receiver = await ReceivingAccount.new();
             await expectRevert(
                 erc777striped.send(receiver.address, 500, "0x"),
                 "ERC777: token recipient contract has no implementer for ERC777TokensRecipient"
@@ -71,7 +71,7 @@ contract("ERC777", accounts => {
         });
 
         it("Forcefully send regardless of interface", async () => {
-            const receiver = await RecievingAccount.new();
+            const receiver = await ReceivingAccount.new();
             let initBal = await erc777striped.balanceOf(receiver.address);
             let tx = await erc777striped.transfer(receiver.address, 500);
             console.log(

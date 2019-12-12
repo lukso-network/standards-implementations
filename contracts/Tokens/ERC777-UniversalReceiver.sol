@@ -1,18 +1,35 @@
 pragma solidity 0.5.10;
 
 import "../../node_modules/@openzeppelin/contracts/token/ERC777/IERC777.sol";
+import "../../node_modules/@openzeppelin/contracts/token/ERC777/IERC777Recipient.sol";
+import "../../node_modules/@openzeppelin/contracts/token/ERC777/IERC777Sender.sol";
 import "../../node_modules/@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "../../node_modules/@openzeppelin/contracts/math/SafeMath.sol";
 import "../../node_modules/@openzeppelin/contracts/utils/Address.sol";
-import "../_LSPs/LSP1_UniversalReceiver.sol";
+import "../../node_modules/@openzeppelin/contracts/introspection/IERC1820Registry.sol";
+import "../_LSPs/ILSP1_UniversalReceiver.sol";
 
-/// @title BareMockToken
-/// @author @JGCarv
-/// @notice Overridden ERC20 to call recipient after transfer
-/// @dev This should be replaced for a ERC777-like token in the future
-contract ERC777Striped is IERC777, IERC20 {
+
+/**
+ * @dev Implementation of the `IERC777` interface.
+ *
+ * This implementation is agnostic to the way tokens are created. This means
+ * that a supply mechanism has to be added in a derived contract using `_mint`.
+ *
+ * Support for ERC20 is included in this contract, as specified by the EIP: both
+ * the ERC777 and ERC20 interfaces can be safely used when interacting with it.
+ * Both `IERC777.Sent` and `IERC20.Transfer` events are emitted on token
+ * movements.
+ *
+ * Additionally, the `granularity` value is hard-coded to `1`, meaning that there
+ * are no special restrictions in the amount of tokens that created, moved, or
+ * destroyed. This makes integration with ERC20 applications seamless.
+ */
+contract ERC777 is IERC777, IERC20 {
     using SafeMath for uint256;
     using Address for address;
+
+    IERC1820Registry private _erc1820; //= IERC1820Registry(0x1820a4B7618BdE71Dce8cdc73aAB6C95905faD24);
 
     mapping(address => uint256) private _balances;
 
@@ -23,7 +40,8 @@ contract ERC777Striped is IERC777, IERC20 {
 
     // We inline the result of the following hashes because Solidity doesn't resolve them at compile time.
     // See https://github.com/ethereum/solidity/issues/4024.
-        // keccak256("ERC777TokensSender")
+
+    // keccak256("ERC777TokensSender")
     bytes32 constant private TOKENS_SENDER_INTERFACE_HASH =
         0x29ddb589b1fb5fc7cf394961c1adf5f8c6454761adf795e67fe149f658abe895;
 
@@ -50,16 +68,23 @@ contract ERC777Striped is IERC777, IERC20 {
     constructor(
         string memory name,
         string memory symbol,
-        address[] memory defaultOperators
+        address[] memory defaultOperators,
+        address registry
     ) public {
         _name = name;
         _symbol = symbol;
-
+        _erc1820 = IERC1820Registry(registry);
         _defaultOperatorsArray = defaultOperators;
         for (uint256 i = 0; i < _defaultOperatorsArray.length; i++) {
             _defaultOperators[_defaultOperatorsArray[i]] = true;
-            _mint(_defaultOperatorsArray[i], _defaultOperatorsArray[i], 1000000000000000000000000, "", "");
         }
+
+        // register interfaces
+        _erc1820.setInterfaceImplementer(address(this), keccak256("ERC777Token"), address(this));
+        _erc1820.setInterfaceImplementer(address(this), keccak256("ERC20Token"), address(this));
+
+        //TEST METHOD
+        _mint(msg.sender, msg.sender, 1000000000000000000000000, "", "");
     }
 
     /**
@@ -131,7 +156,7 @@ contract ERC777Striped is IERC777, IERC20 {
 
         address from = msg.sender;
 
-        _callTokensToSend(from, from, recipient, amount, "", "", false);
+        _callTokensToSend(from, from, recipient, amount, "", "");
 
         _move(from, from, recipient, amount, "", "");
 
@@ -263,7 +288,7 @@ contract ERC777Striped is IERC777, IERC20 {
 
         address spender = msg.sender;
 
-        _callTokensToSend(spender, holder, recipient, amount, "", "", false);
+        _callTokensToSend(spender, holder, recipient, amount, "", "");
 
         _move(spender, holder, recipient, amount, "", "");
         _approve(holder, spender, _allowances[holder][spender].sub(amount));
@@ -305,7 +330,7 @@ contract ERC777Striped is IERC777, IERC20 {
         _totalSupply = _totalSupply.add(amount);
         _balances[account] = _balances[account].add(amount);
 
-        _callTokensReceived(operator, address(0), account, amount, userData, operatorData, false);
+        _callTokensReceived(operator, address(0), account, amount, userData, operatorData, true);
 
         emit Minted(operator, account, amount, userData, operatorData);
         emit Transfer(address(0), account, amount);
@@ -335,9 +360,9 @@ contract ERC777Striped is IERC777, IERC20 {
         require(from != address(0), "ERC777: send from the zero address");
         require(to != address(0), "ERC777: send to the zero address");
 
-        _callTokensToSend(operator, from, to, amount, userData, operatorData, requireReceptionAck);
+        _callTokensToSend(operator, from, to, amount, userData, operatorData);
 
-       _move(operator, from, to, amount, userData, operatorData);
+        _move(operator, from, to, amount, userData, operatorData);
 
         _callTokensReceived(operator, from, to, amount, userData, operatorData, requireReceptionAck);
     }
@@ -361,7 +386,7 @@ contract ERC777Striped is IERC777, IERC20 {
     {
         require(from != address(0), "ERC777: burn from the zero address");
 
-        _callTokensToSend(operator, from, address(0), amount, data, operatorData, false);
+        _callTokensToSend(operator, from, address(0), amount, data, operatorData);
 
         // Update state variables
         _totalSupply = _totalSupply.sub(amount);
@@ -397,7 +422,7 @@ contract ERC777Striped is IERC777, IERC20 {
         _allowances[holder][spender] = value;
         emit Approval(holder, spender, value);
     }
-    event DEBUG(uint d);
+
     /**
      * @dev Call from.tokensToSend() if the interface is registered
      * @param operator address operator requesting the transfer
@@ -413,20 +438,14 @@ contract ERC777Striped is IERC777, IERC20 {
         address to,
         uint256 amount,
         bytes memory userData,
-        bytes memory operatorData,
-        bool requireReceptionAck
+        bytes memory operatorData
     )
         private
     {
-    
-        bytes memory data = abi.encodePacked(operator, from, to, amount, userData, operatorData);
-        (bool succ, bytes memory ret) = to.call(abi.encodeWithSignature("universalReceiver(bytes32,bytes)", TOKENS_SENDER_INTERFACE_HASH,data));
-        if(requireReceptionAck && from.isContract()) {
-            bytes32 returnHash;
-            assembly {
-                returnHash := mload(add(ret, 32))
-            }
-            require(succ && returnHash == TOKENS_SENDER_INTERFACE_HASH ,"ERC777: token recipient contract has no implementer for ERC777TokensSender");
+        address implementer = _erc1820.getInterfaceImplementer(from, TOKENS_SENDER_INTERFACE_HASH);
+        if (implementer != address(0)) {
+            bytes memory data = abi.encodePacked(operator, from, to, amount, userData, operatorData);
+            IUniversalReceiver(implementer).universalReceiver(TOKENS_SENDER_INTERFACE_HASH, data);
         }
     }
 
@@ -452,16 +471,12 @@ contract ERC777Striped is IERC777, IERC20 {
     )
         private
     {
-        bytes memory data = abi.encodePacked(operator, from, to, amount, userData, operatorData);
-    
-        (bool succ, bytes memory ret) = to.call(abi.encodeWithSignature("universalReceiver(bytes32,bytes)", TOKENS_RECIPIENT_INTERFACE_HASH,data));
-        bytes32 returnHash;
-        assembly {
-            returnHash := mload(add(ret, 32))
-        }
-        if(requireReceptionAck && to.isContract()) {
-            //require(succ, "ERC777: token recipient contract has no implementer for ERC777TokensRecipient");
-            require(succ && returnHash == TOKENS_RECIPIENT_INTERFACE_HASH, "ERC777: token recipient contract has no implementer for ERC777TokensRecipient");
+        address implementer = _erc1820.getInterfaceImplementer(to, TOKENS_RECIPIENT_INTERFACE_HASH);
+        if (implementer != address(0)) {
+            bytes memory data = abi.encodePacked(operator, from, to, amount, userData, operatorData);
+            IUniversalReceiver(implementer).universalReceiver(TOKENS_RECIPIENT_INTERFACE_HASH, data);
+        } else if (requireReceptionAck) {
+            require(!to.isContract(), "ERC777: token recipient contract has no implementer for ERC777TokensRecipient");
         }
     }
 }

@@ -1,8 +1,8 @@
 pragma solidity 0.5.10;
 
-import "../_ERCS/ERC725.sol";
+import "../_ERCS/IERC725.sol";
 
-contract Account is ERC725 {
+contract Account is IERC725 {
 
     uint256 constant OPERATION_CALL = 0;
     uint256 constant OPERATION_CREATE = 1;
