@@ -9,7 +9,11 @@ contract DigitalCertificate is IERC725, ERC777 {
 
     address public owner;
 
-    // TODO add inital authentic data
+    modifier onlyOwner() {
+        require(msg.sender == address(owner), "only-owner-allowed");
+        _;
+    }
+
     constructor() public {
         owner = msg.sender;
     }
@@ -43,25 +47,4 @@ contract DigitalCertificate is IERC725, ERC777 {
 
     // TODO add execute?
 
-    // TODO add  721
-//    function mint(address _to, uint256 _tokenId)
-//    public
-//    onlyOwner
-//    {
-//        _safeMint(_to, _tokenId);
-//    }
-//
-//    function mintBatch(address[] memory _to, uint256[] memory _tokenId)
-//    public
-//    onlyOwner
-//    {
-//        for (uint16 i = 0; i < _to.length; i++) {
-//            _safeMint(_to[i], _tokenId[i]);
-//        }
-//    }
-
-    modifier onlyOwner() {
-        require(msg.sender == owner, "only-owner-allowed");
-        _;
-    }
 }

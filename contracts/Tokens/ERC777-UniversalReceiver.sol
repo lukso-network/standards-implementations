@@ -29,7 +29,7 @@ contract ERC777 is IERC777, IERC20 {
     using SafeMath for uint256;
     using Address for address;
 
-    IERC1820Registry private _erc1820; //= IERC1820Registry(0x1820a4B7618BdE71Dce8cdc73aAB6C95905faD24);
+    IERC1820Registry private _erc1820 = IERC1820Registry(0x1820a4B7618BdE71Dce8cdc73aAB6C95905faD24);
 
     mapping(address => uint256) private _balances;
 
@@ -68,12 +68,11 @@ contract ERC777 is IERC777, IERC20 {
     constructor(
         string memory name,
         string memory symbol,
-        address[] memory defaultOperators,
-        address registry
+        address[] memory defaultOperators
     ) public {
         _name = name;
         _symbol = symbol;
-        _erc1820 = IERC1820Registry(registry);
+//        _erc1820 = IERC1820Registry(registry);
         _defaultOperatorsArray = defaultOperators;
         for (uint256 i = 0; i < _defaultOperatorsArray.length; i++) {
             _defaultOperators[_defaultOperatorsArray[i]] = true;
@@ -307,7 +306,7 @@ contract ERC777 is IERC777, IERC20 {
      *
      * See `IERC777Sender` and `IERC777Recipient`.
      *
-     * Emits `Sent` and `Transfer` events.
+     * Emits `Minted` and `Transfer` events.
      *
      * Requirements
      *
@@ -473,6 +472,7 @@ contract ERC777 is IERC777, IERC20 {
     {
         address implementer = _erc1820.getInterfaceImplementer(to, TOKENS_RECIPIENT_INTERFACE_HASH);
         if (implementer != address(0)) {
+            // Call universal receiver on receiving contract, send supported type: TOKENS_RECIPIENT_INTERFACE_HASH
             bytes memory data = abi.encodePacked(operator, from, to, amount, userData, operatorData);
             IUniversalReceiver(implementer).universalReceiver(TOKENS_RECIPIENT_INTERFACE_HASH, data);
         } else if (requireReceptionAck) {
