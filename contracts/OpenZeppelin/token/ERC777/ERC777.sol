@@ -1,14 +1,12 @@
-pragma solidity 0.5.10;
+pragma solidity ^0.5.0;
 
-import "../OpenZeppelin/contracts/token/ERC777/IERC777.sol";
-import "../OpenZeppelin/contracts/token/ERC777/IERC777Recipient.sol";
-import "../OpenZeppelin/contracts/token/ERC777/IERC777Sender.sol";
-import "../OpenZeppelin/contracts/token/ERC20/IERC20.sol";
-import "../OpenZeppelin/contracts/math/SafeMath.sol";
-import "../OpenZeppelin/contracts/utils/Address.sol";
-import "../OpenZeppelin/contracts/introspection/IERC1820Registry.sol";
-import "../_LSPs/ILSP1_UniversalReceiver.sol";
-
+import "./IERC777.sol";
+import "./IERC777Recipient.sol";
+import "./IERC777Sender.sol";
+import "../../token/ERC20/IERC20.sol";
+import "../../math/SafeMath.sol";
+import "../../utils/Address.sol";
+import "../../introspection/IERC1820Registry.sol";
 
 /**
  * @dev Implementation of the `IERC777` interface.
@@ -72,7 +70,7 @@ contract ERC777 is IERC777, IERC20 {
     ) public {
         _name = name;
         _symbol = symbol;
-//        _erc1820 = IERC1820Registry(registry);
+
         _defaultOperatorsArray = defaultOperators;
         for (uint256 i = 0; i < _defaultOperatorsArray.length; i++) {
             _defaultOperators[_defaultOperatorsArray[i]] = true;
@@ -81,9 +79,6 @@ contract ERC777 is IERC777, IERC20 {
         // register interfaces
         _erc1820.setInterfaceImplementer(address(this), keccak256("ERC777Token"), address(this));
         _erc1820.setInterfaceImplementer(address(this), keccak256("ERC20Token"), address(this));
-
-        //TEST METHOD
-        _mint(msg.sender, msg.sender, 1000000000000000000000000, "", "");
     }
 
     /**
@@ -306,7 +301,7 @@ contract ERC777 is IERC777, IERC20 {
      *
      * See `IERC777Sender` and `IERC777Recipient`.
      *
-     * Emits `Minted` and `Transfer` events.
+     * Emits `Sent` and `Transfer` events.
      *
      * Requirements
      *
@@ -443,8 +438,7 @@ contract ERC777 is IERC777, IERC20 {
     {
         address implementer = _erc1820.getInterfaceImplementer(from, TOKENS_SENDER_INTERFACE_HASH);
         if (implementer != address(0)) {
-            bytes memory data = abi.encodePacked(operator, from, to, amount, userData, operatorData);
-            IUniversalReceiver(implementer).universalReceiver(TOKENS_SENDER_INTERFACE_HASH, data);
+            IERC777Sender(implementer).tokensToSend(operator, from, to, amount, userData, operatorData);
         }
     }
 
@@ -472,9 +466,7 @@ contract ERC777 is IERC777, IERC20 {
     {
         address implementer = _erc1820.getInterfaceImplementer(to, TOKENS_RECIPIENT_INTERFACE_HASH);
         if (implementer != address(0)) {
-            // Call universal receiver on receiving contract, send supported type: TOKENS_RECIPIENT_INTERFACE_HASH
-            bytes memory data = abi.encodePacked(operator, from, to, amount, userData, operatorData);
-            IUniversalReceiver(implementer).universalReceiver(TOKENS_RECIPIENT_INTERFACE_HASH, data);
+            IERC777Recipient(implementer).tokensReceived(operator, from, to, amount, userData, operatorData);
         } else if (requireReceptionAck) {
             require(!to.isContract(), "ERC777: token recipient contract has no implementer for ERC777TokensRecipient");
         }
