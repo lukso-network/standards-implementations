@@ -1,6 +1,6 @@
 pragma solidity 0.5.10;
 
-import "../_ERCS/IERC725.sol";
+import "../_ERCs/IERC725.sol";
 import "../Tokens/ERC777-UniversalReceiver.sol";
 
 contract DigitalCertificate is IERC725, ERC777 {
