@@ -46,6 +46,8 @@ contract DigitalCertificate is IERC725, ERC777 {
         emit DataChanged(_key, _value);
     }
 
-    // TODO add execute?
+    function execute(uint256 _operationType, address _to, uint256 _value, bytes calldata _data) external {
+        // TODO add execute?
+    }
 
 }
