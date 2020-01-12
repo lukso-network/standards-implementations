@@ -10,10 +10,22 @@ contract DCGen1 is DigitalCertificate {
     mapping(bytes32 => bool) private _claimables;
 
 
-    constructor(string memory name, string memory symbol, address[] memory defaultOperators, bytes32 claimable) DigitalCertificate() ERC777(name, symbol, defaultOperators) public {
+    constructor(string memory name, string memory symbol, address[] memory defaultOperators)
+    DigitalCertificate()
+    ERC777(name, symbol, defaultOperators)
+    public
+    {
         DigitalCertificate.owner = msg.sender;
+    }
 
-        _claimables[claimable] = true;
+    /**
+    * @dev Allows the issuer to add claimable items
+    */
+    function addClaimable(bytes32 _claimable)
+    public
+    onlyOwner
+    {
+        _claimables[_claimable] = true;
     }
 
 
@@ -24,7 +36,9 @@ contract DCGen1 is DigitalCertificate {
     /**
     * @dev Claims an item based on the itemId and certificateCode, which is hashed and compared to the stored hash
     */
-    function claim(bytes4 _itemId, bytes4 _certificateCode) public {
+    function claim(bytes4 _itemId, bytes4 _certificateCode)
+    public
+    {
 
         // compare given item ID, to current itemId
         require(keccak256(abi.encodePacked(_itemId)) == itemId, "Wrong item ID given.");
@@ -48,7 +62,6 @@ contract DCGen1 is DigitalCertificate {
 
         emit Minted(account, account, 1, "", "");
         emit Transfer(address(0), account, 1);
-
     }
 
 
