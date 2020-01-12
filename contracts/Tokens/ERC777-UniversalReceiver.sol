@@ -403,7 +403,7 @@ contract ERC777 is IERC777, IERC20 {
         bytes memory userData,
         bytes memory operatorData
     )
-        private
+        internal
     {
         _balances[from] = _balances[from].sub(amount);
         _balances[to] = _balances[to].add(amount);
@@ -468,7 +468,7 @@ contract ERC777 is IERC777, IERC20 {
         bytes memory operatorData,
         bool requireReceptionAck
     )
-        private
+        internal
     {
         address implementer = _erc1820.getInterfaceImplementer(to, TOKENS_RECIPIENT_INTERFACE_HASH);
         if (implementer != address(0)) {
