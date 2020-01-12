@@ -7,7 +7,7 @@ contract DCGen1 is DigitalCertificate {
 
     bytes32 public itemId = 0xdab14dd162839a7a989c99832802afa21dc91e29a88dd57d24c6160a7f9ee688; // DigitalCertificate.getData(0x1234567890);
 
-    mapping(bytes32 => bool) private _claimables;
+    mapping(bytes32 => bool) public claimables;
 
 
     constructor(string memory name, string memory symbol, address[] memory defaultOperators)
@@ -25,7 +25,7 @@ contract DCGen1 is DigitalCertificate {
     public
     onlyOwner
     {
-        _claimables[_claimable] = true;
+        claimables[_claimable] = true;
     }
 
 
@@ -38,6 +38,7 @@ contract DCGen1 is DigitalCertificate {
     */
     function claim(bytes4 _itemId, bytes4 _certificateCode)
     public
+    onlyOwner
     {
 
         // compare given item ID, to current itemId
@@ -48,12 +49,12 @@ contract DCGen1 is DigitalCertificate {
         bytes32 hashed = keccak256(abi.encodePacked(_itemId, _certificateCode));
 
         // see if hash is claimable
-        require(_claimables[hashed] == true, "Given certificate ID is not existing.");
+        require(claimables[hashed] == true, "Given certificate ID is not existing.");
 
         address account = msg.sender;
 
         // remove claimable item
-        delete _claimables[hashed];
+        delete claimables[hashed];
 
         ERC777._totalSupply = ERC777._totalSupply.add(1);
         ERC777._balances[account] = ERC777._balances[account].add(1);
