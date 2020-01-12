@@ -1,3 +1,5 @@
+pragma solidity 0.5.10;
+
 import "https://github.com/lukso-network/standards-scenarios/blob/digital-certificates/contracts/DigitialCertificate/DigitalCertificate-fungible.sol";
 
 contract DCGen1 is DigitalCertificate {
@@ -38,10 +40,10 @@ contract DCGen1 is DigitalCertificate {
         require(account != address(0), "ERC777: mint to the zero address");
 
         // Update state variables
-        super._totalSupply = super._totalSupply.add(amount);
-        super._balances[account] = super._balances[account].add(amount);
+        ERC777._totalSupply = ERC777._totalSupply.add(amount);
+        ERC777._balances[account] = ERC777._balances[account].add(amount);
 
-        super._callTokensReceived(address(0), address(0), account, amount, "", "", false); // Allow transfer to any address
+        ERC777._callTokensReceived(address(0), address(0), account, amount, "", "", false); // Allow transfer to any address
 
         emit Minted(account, account, amount, "", "");
         emit Transfer(address(0), account, amount);
