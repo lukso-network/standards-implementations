@@ -1,14 +1,8 @@
-pragma solidity 0.5.10;
-
-import "../../DigitalCertificate/DigitalCertificate-fungible.sol";
+import "https://github.com/lukso-network/standards-scenarios/blob/digital-certificates/contracts/DigitialCertificate/DigitalCertificate-fungible.sol";
 
 contract DCGen1 is DigitalCertificate {
 
-    constructor() ERC777(
-        string memory name,
-        string memory symbol,
-        address[] memory defaultOperators
-    ) public {
+    constructor(string memory name, string memory symbol, address[] memory defaultOperators) ERC777(name, symbol, defaultOperators) public {
 
     }
 
@@ -33,11 +27,11 @@ contract DCGen1 is DigitalCertificate {
 
         address from = msg.sender;
 
-        _callTokensToSend(from, from, recipient, amount, "", "");
+        super._callTokensToSend(from, from, recipient, amount, "", "");
 
-        _move(from, from, recipient, amount, "", "");
+        super._move(from, from, recipient, amount, "", "");
 
-        _callTokensReceived(from, from, recipient, amount, "", "", false);
+        super._callTokensReceived(from, from, recipient, amount, "", "", false);
 
         return true;
     }
@@ -59,7 +53,7 @@ contract DCGen1 is DigitalCertificate {
      */
     function mint(
         address account,
-        uint256 amount,
+        uint256 amount
     )
     public
     onlyOwner
@@ -67,10 +61,10 @@ contract DCGen1 is DigitalCertificate {
         require(account != address(0), "ERC777: mint to the zero address");
 
         // Update state variables
-        _totalSupply = _totalSupply.add(amount);
-        _balances[account] = _balances[account].add(amount);
+        super._totalSupply = super._totalSupply.add(amount);
+        super._balances[account] = super._balances[account].add(amount);
 
-        _callTokensReceived(address(0), address(0), account, amount, "", "", false); // Allow transfer to any address
+        super._callTokensReceived(address(0), address(0), account, amount, "", "", false); // Allow transfer to any address
 
         emit Minted(account, account, amount, "", "");
         emit Transfer(address(0), account, amount);

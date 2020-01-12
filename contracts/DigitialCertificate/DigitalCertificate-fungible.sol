@@ -14,6 +14,7 @@ contract DigitalCertificate is IERC725, ERC777 {
         _;
     }
 
+
     constructor() public {
         owner = msg.sender;
     }
