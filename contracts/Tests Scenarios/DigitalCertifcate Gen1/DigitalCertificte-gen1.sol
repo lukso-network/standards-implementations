@@ -3,57 +3,70 @@ pragma solidity 0.5.10;
 import "https://github.com/lukso-network/standards-scenarios/blob/digital-certificates/contracts/DigitialCertificate/DigitalCertificate-fungible.sol";
 //import "../../DigitialCertificate/DigitalCertificate-fungible.sol";
 
-
 contract DCGen1 is DigitalCertificate {
+
+    bytes32 public itemId = 0xdab14dd162839a7a989c99832802afa21dc91e29a88dd57d24c6160a7f9ee688; // DigitalCertificate.getData(0x1234567890);
 
     mapping(bytes32 => bool) private _claimables;
 
-    constructor(string memory name, string memory symbol, address[] memory defaultOperators) ERC777(name, symbol, defaultOperators) public {
+
+    constructor(string memory name, string memory symbol, address[] memory defaultOperators, bytes32 claimable) DigitalCertificate() ERC777(name, symbol, defaultOperators) public {
         DigitalCertificate.owner = msg.sender;
+
+        _claimables[claimable] = true;
     }
+
 
     // certificate should not be able to receive ETH/LYX
     function() external {}
 
+
     /**
     * @dev Claims an item based on the itemId and certificateCode, which is hashed and compared to the stored hash
     */
-    function claim(bytes32 _itemId, bytes4 _certificateCode) public {
+    function claim(bytes4 _itemId, bytes4 _certificateCode) public {
 
-        bytes memory itemId = 0xF5D18CEF; // DigitalCertificate.getData(0x1234567890);
+        // compare given item ID, to current itemId
+        require(keccak256(abi.encodePacked(_itemId)) == itemId, "Wrong item ID given.");
 
-        if(keccak256(itemId) == _itemId) {
-            bytes32 hashed = keccak256(_itemId, _certificateCode);
 
-            if(_claimables[hashed]) {
-                address account = msg.sender;
+        // hash itemId with unique certificate ID
+        bytes32 hashed = keccak256(abi.encodePacked(_itemId, _certificateCode));
 
-                ERC777._totalSupply = ERC777._totalSupply.add(1000000000000000000);
-                ERC777._balances[account] = ERC777._balances[account].add(1000000000000000000);
+        // see if hash is claimable
+        require(_claimables[hashed] == true, "Given certificate ID is not existing.");
 
-                ERC777._callTokensReceived(address(0), address(0), account, 1000000000000000000, "", "", false); // Allow transfer to any address
+        address account = msg.sender;
 
-                emit Minted(account, account, 1000000000000000000, "", "");
-                emit Transfer(address(0), account, 1000000000000000000);
-            }
-        }
+        // remove claimable item
+        delete _claimables[hashed];
+
+        ERC777._totalSupply = ERC777._totalSupply.add(1);
+        ERC777._balances[account] = ERC777._balances[account].add(1);
+
+        ERC777._callTokensReceived(address(0), address(0), account, 1, "", "", false); // Allow transfer to any address
+
+        emit Minted(account, account, 1, "", "");
+        emit Transfer(address(0), account, 1);
+
     }
 
-/**
- * @dev Creates `amount` tokens and assigns them to `account`, increasing
- * the total supply.
- *
- *
- * See `IERC777Sender` and `IERC777Recipient`.
- *
- * Emits `Minted` and `Transfer` events.
- *
- * Requirements
- *
- * - `account` cannot be the zero address.
- * - if `account` is a contract, it must implement the `tokensReceived`
- * interface.
- */
+
+    /**
+     * @dev Creates `amount` tokens and assigns them to `account`, increasing
+     * the total supply.
+     *
+     *
+     * See `IERC777Sender` and `IERC777Recipient`.
+     *
+     * Emits `Minted` and `Transfer` events.
+     *
+     * Requirements
+     *
+     * - `account` cannot be the zero address.
+     * - if `account` is a contract, it must implement the `tokensReceived`
+     * interface.
+     */
     function mint(
         address account,
         uint256 amount
