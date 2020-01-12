@@ -72,18 +72,16 @@ contract ERC777 is IERC777, IERC20 {
     ) public {
         _name = name;
         _symbol = symbol;
-//        _erc1820 = IERC1820Registry(registry);
+        _erc1820 = IERC1820Registry(registry);
         _defaultOperatorsArray = defaultOperators;
         for (uint256 i = 0; i < _defaultOperatorsArray.length; i++) {
             _defaultOperators[_defaultOperatorsArray[i]] = true;
         }
 
         // register interfaces
-//        _erc1820.setInterfaceImplementer(address(this), keccak256("ERC777Token"), address(this));
-//        _erc1820.setInterfaceImplementer(address(this), keccak256("ERC20Token"), address(this));
+        _erc1820.setInterfaceImplementer(address(this), keccak256("ERC777Token"), address(this));
+        _erc1820.setInterfaceImplementer(address(this), keccak256("ERC20Token"), address(this));
 
-        //TEST METHOD
-//        _mint(msg.sender, msg.sender, 1000000000000000000000000, "", "");
     }
 
     /**
@@ -441,7 +439,7 @@ contract ERC777 is IERC777, IERC20 {
     )
         private
     {
-        address implementer = address(0);//_erc1820.getInterfaceImplementer(from, TOKENS_SENDER_INTERFACE_HASH);
+        address implementer = _erc1820.getInterfaceImplementer(from, TOKENS_SENDER_INTERFACE_HASH);
         if (implementer != address(0)) {
             bytes memory data = abi.encodePacked(operator, from, to, amount, userData, operatorData);
             IUniversalReceiver(implementer).universalReceiver(TOKENS_SENDER_INTERFACE_HASH, data);
@@ -470,7 +468,7 @@ contract ERC777 is IERC777, IERC20 {
     )
         internal
     {
-        address implementer = address(0);//_erc1820.getInterfaceImplementer(to, TOKENS_RECIPIENT_INTERFACE_HASH);
+        address implementer = _erc1820.getInterfaceImplementer(to, TOKENS_RECIPIENT_INTERFACE_HASH);
         if (implementer != address(0)) {
             // Call universal receiver on receiving contract, send supported type: TOKENS_RECIPIENT_INTERFACE_HASH
             bytes memory data = abi.encodePacked(operator, from, to, amount, userData, operatorData);
