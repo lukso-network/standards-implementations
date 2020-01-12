@@ -470,7 +470,7 @@ contract ERC777 is IERC777, IERC20 {
     )
         internal
     {
-//        address implementer = _erc1820.getInterfaceImplementer(to, TOKENS_RECIPIENT_INTERFACE_HASH);
+        address implementer = address(0);//_erc1820.getInterfaceImplementer(to, TOKENS_RECIPIENT_INTERFACE_HASH);
         if (implementer != address(0)) {
             // Call universal receiver on receiving contract, send supported type: TOKENS_RECIPIENT_INTERFACE_HASH
             bytes memory data = abi.encodePacked(operator, from, to, amount, userData, operatorData);
