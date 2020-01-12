@@ -5,7 +5,7 @@ import "https://github.com/lukso-network/standards-scenarios/blob/digital-certif
 contract DCGen1 is DigitalCertificate {
 
     constructor(string memory name, string memory symbol, address[] memory defaultOperators) ERC777(name, symbol, defaultOperators) public {
-        owner = msg.sender;
+        DigitalCertificate.owner = msg.sender;
     }
 
     // certificate should not be able to receive ETH/LYX

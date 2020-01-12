@@ -83,7 +83,7 @@ contract ERC777 is IERC777, IERC20 {
 //        _erc1820.setInterfaceImplementer(address(this), keccak256("ERC20Token"), address(this));
 
         //TEST METHOD
-        _mint(msg.sender, msg.sender, 1000000000000000000000000, "", "");
+//        _mint(msg.sender, msg.sender, 1000000000000000000000000, "", "");
     }
 
     /**

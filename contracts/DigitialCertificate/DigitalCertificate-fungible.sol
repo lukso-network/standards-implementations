@@ -15,10 +15,6 @@ contract DigitalCertificate is IERC725, ERC777 {
     }
 
 
-    constructor() public {
-        owner = msg.sender;
-    }
-
     // certificate should not be able to receive ETH/LYX
     function() external {}
 
