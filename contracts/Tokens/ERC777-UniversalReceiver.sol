@@ -72,7 +72,7 @@ contract ERC777 is IERC777, IERC20 {
     ) public {
         _name = name;
         _symbol = symbol;
-        _erc1820 = IERC1820Registry(registry);
+//        _erc1820 = IERC1820Registry(registry);
         _defaultOperatorsArray = defaultOperators;
         for (uint256 i = 0; i < _defaultOperatorsArray.length; i++) {
             _defaultOperators[_defaultOperatorsArray[i]] = true;
