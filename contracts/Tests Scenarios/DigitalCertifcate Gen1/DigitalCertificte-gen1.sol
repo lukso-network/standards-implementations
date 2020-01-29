@@ -1,7 +1,7 @@
 pragma solidity 0.5.10;
 
-import "https://github.com/lukso-network/standards-scenarios/blob/digital-certificates/contracts/DigitialCertificate/DigitalCertificate-fungible.sol";
-//import "../../DigitialCertificate/DigitalCertificate-fungible.sol";
+//import "https://github.com/lukso-network/standards-scenarios/blob/digital-certificates/contracts/DigitialCertificate/DigitalCertificate-fungible.sol";
+import "../../DigitialCertificate/DigitalCertificate-fungible.sol";
 
 contract DCGen1 is DigitalCertificate {
 
@@ -36,7 +36,7 @@ contract DCGen1 is DigitalCertificate {
     /**
     * @dev Claims an item based on the itemId and certificateCode, which is hashed and compared to the stored hash
     */
-    function claim(bytes4 _itemId, bytes4 _certificateCode)
+    function claim(address account, bytes4 _itemId, bytes4 _certificateCode)
     public
     onlyOwner
     {
@@ -51,7 +51,7 @@ contract DCGen1 is DigitalCertificate {
         // see if hash is claimable
         require(claimables[hashed] == true, "Given certificate ID is not existing.");
 
-        address account = msg.sender;
+        // address account = msg.sender;
 
         // remove claimable item
         delete claimables[hashed];
