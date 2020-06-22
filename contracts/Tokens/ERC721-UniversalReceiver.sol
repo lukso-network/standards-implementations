@@ -1,9 +1,9 @@
-pragma solidity ^0.5.0;
+pragma solidity ^0.6.0;
 
-import "../OpenZeppelin/math/SafeMath.sol";
-import "../OpenZeppelin/utils/Address.sol";
-import "../OpenZeppelin/drafts/Counters.sol";
-import "../OpenZeppelin/token/ERC721/IERC721.sol";
+import "../../node_modules/@openzeppelin/contracts/math/SafeMath.sol";
+import "../../node_modules/@openzeppelin/contracts/utils/Address.sol";
+import "../../node_modules/@openzeppelin/contracts/utils/Counters.sol";
+import "../../node_modules/@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "../_LSPs/ILSP1_UniversalReceiver.sol";
 /**
  * @title ERC721 Non-Fungible Token Standard basic implementation

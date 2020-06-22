@@ -1,9 +1,9 @@
-pragma solidity 0.5.10;
+pragma solidity ^0.6.0;
 
 import "../_LSPs/ILSP1_UniversalReceiver.sol";
 import "../Account/Account.sol";
 
-contract BasicUniversalReceiver is Account, IUniversalReceiver {
+contract BasicUniversalReceiver is Account {
 
     event TokenReceived(address token, address from, address to, uint256 amount);
 

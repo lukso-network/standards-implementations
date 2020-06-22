@@ -1,4 +1,4 @@
-pragma solidity 0.5.10;
+pragma solidity ^0.6.0;
 
 contract Universal165Query {
     bytes32 constant InvalidID = 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff;

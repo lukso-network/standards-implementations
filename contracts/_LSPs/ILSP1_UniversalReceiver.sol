@@ -1,4 +1,4 @@
-pragma solidity 0.5.10;
+pragma solidity ^0.6.0;
 
 interface IUniversalReceiver {
     event Received(bytes32 indexed typeId, bytes data);

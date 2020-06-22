@@ -1,11 +1,11 @@
-pragma solidity 0.5.10;
+pragma solidity ^0.6.0;
 
 import "./ERC777Receiver.sol";
 import "../../_LSPs/ILSP1_UniversalReceiver.sol";
-import "../../OpenZeppelin/introspection/ERC1820Implementer.sol";
+import "../../../node_modules/@openzeppelin/contracts/introspection/ERC1820Implementer.sol";
 import "../../Account/Account.sol";
 
-contract ReceivingAccount is Account, IUniversalReceiver, ERC1820Implementer {
+contract ReceivingAccount is Account, ERC1820Implementer {
     
     ERC777Receiver public receiver;
 
@@ -17,6 +17,5 @@ contract ReceivingAccount is Account, IUniversalReceiver, ERC1820Implementer {
         ret = receiver.universalReceiver(msg.sender, typeId,data);
         emit Received(typeId,data);
     }
-
 
 }

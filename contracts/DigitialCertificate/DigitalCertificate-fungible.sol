@@ -1,4 +1,4 @@
-pragma solidity 0.5.10;
+pragma solidity ^0.6.0;
 
 import "../_ERCs/IERC725.sol";
 import "../Tokens/ERC777-UniversalReceiver.sol";
@@ -13,10 +13,6 @@ contract DigitalCertificate is IERC725, ERC777 {
         require(msg.sender == address(owner), "only-owner-allowed");
         _;
     }
-
-
-    // certificate should not be able to receive ETH/LYX
-    function() external {}
 
     function changeOwner(address _newOwner)
     public

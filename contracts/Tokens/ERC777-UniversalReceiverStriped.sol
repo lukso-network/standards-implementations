@@ -1,9 +1,9 @@
-pragma solidity 0.5.10;
+pragma solidity ^0.6.0;
 
-import "../OpenZeppelin/token/ERC777/IERC777.sol";
-import "../OpenZeppelin/token/ERC20/IERC20.sol";
-import "../OpenZeppelin/math/SafeMath.sol";
-import "../OpenZeppelin/utils/Address.sol";
+import "../../node_modules/@openzeppelin/contracts/token/ERC777/IERC777.sol";
+import "../../node_modules/@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "../../node_modules/@openzeppelin/contracts/math/SafeMath.sol";
+import "../../node_modules/@openzeppelin/contracts/utils/Address.sol";
 import "../_LSPs/ILSP1_UniversalReceiver.sol";
 
 /// @title BareMockToken

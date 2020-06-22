@@ -22,7 +22,7 @@
   "homepage": "https://github.com/lukso-network/standards-scenarios#readme",
   "dependencies": {
     "@openzeppelin/contracts": "^3.0.2",
-    "truffle": "^5.0.30"
+    "truffle": "^5.1.31"
   },
   "devDependencies": {
     "chai": "^4.2.0",

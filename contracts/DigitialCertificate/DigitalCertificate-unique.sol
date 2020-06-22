@@ -1,4 +1,4 @@
-pragma solidity 0.5.10;
+pragma solidity ^0.6.0;
 
 import "../_ERCs/IERC725.sol";
 import "../Tokens/ERC721-UniversalReceiver.sol";
@@ -13,9 +13,6 @@ contract DigitalCertificate is IERC725, ERC721 {
     constructor() public {
         owner = msg.sender;
     }
-
-    // certificate should not be able to receive ETH/LYX
-    function() external {}
 
     function changeOwner(address _newOwner)
     public

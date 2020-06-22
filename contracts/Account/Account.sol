@@ -1,4 +1,4 @@
-pragma solidity ^0.6.10;
+pragma solidity ^0.6.0;
 
 import "../_ERCs/IERC725.sol";
 import "../_LSPs/ILSP1_UniversalReceiver.sol";
@@ -19,7 +19,7 @@ contract Account is IERC725, IUniversalReceiver {
 
     /* Public functions */
 
-    function() external payable {}
+    receive() external {}
 
     function changeOwner(address _newOwner)
     public
@@ -45,7 +45,7 @@ contract Account is IERC725, IUniversalReceiver {
         emit DataChanged(_key, _value);
     }
 
-    function execute(uint256 _operation, address _to, uint256 _value, bytes calldata _data)
+    function execute(uint256 _operation, address _to, uint256 _value, bytes memory _data)
     external
     onlyOwner
     {
@@ -66,16 +66,16 @@ contract Account is IERC725, IUniversalReceiver {
         }
     }
 
-    function universalReceiver(bytes32 typeId, bytes calldata data)
+    function universalReceiver(bytes32 typeId, bytes memory data)
     external
     returns (bytes32 returnValue)
     {
         address universalReceiverAddress = toAddress(getData(0x0000000000000000000000000000000000000000000000000000000000000002), 12);
-        uint256 gas = gasleft() - 2500;
+        uint256 gasl = gasleft() - 2500;
 
         // solium-disable-next-line security/no-inline-assembly
         assembly {
-            returnValue := delegatecall(gas, universalReceiverAddress, add(data, 0x20), mload(data), 0, 0)
+            returnValue := delegatecall(gasl, universalReceiverAddress, add(data, 0x20), mload(data), 0, 0)
         }
 //        emit Received(typeId, data);
     }

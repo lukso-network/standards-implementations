@@ -1,4 +1,4 @@
-pragma solidity 0.5.10;
+pragma solidity ^0.6.0;
 
 interface ERC721 {
     event Transfer(address indexed from, address indexed to, uint256 indexed tokenId);

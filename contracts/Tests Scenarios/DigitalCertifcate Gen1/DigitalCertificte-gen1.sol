@@ -1,4 +1,4 @@
-pragma solidity 0.5.10;
+pragma solidity ^0.6.0;
 
 //import "https://github.com/lukso-network/standards-scenarios/blob/digital-certificates/contracts/DigitialCertificate/DigitalCertificate-fungible.sol";
 import "../../DigitialCertificate/DigitalCertificate-fungible.sol";
@@ -27,10 +27,6 @@ contract DCGen1 is DigitalCertificate {
     {
         claimables[_claimable] = true;
     }
-
-
-    // certificate should not be able to receive ETH/LYX
-    function() external {}
 
 
     /**
