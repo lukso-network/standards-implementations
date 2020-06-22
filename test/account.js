@@ -11,7 +11,7 @@ contract("Account", accounts => {
             const idOwner = await account.owner.call();
 
             assert.equal(idOwner, owner, "Addresses should match");
-        });
+        });``
     });
 
     context("Interactions with Account contracts", async () => {

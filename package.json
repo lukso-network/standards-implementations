@@ -21,7 +21,7 @@
   },
   "homepage": "https://github.com/lukso-network/standards-scenarios#readme",
   "dependencies": {
-    "@openzeppelin/contracts": "^2.3.0",
+    "@openzeppelin/contracts": "^3.0.2",
     "truffle": "^5.0.30"
   },
   "devDependencies": {
