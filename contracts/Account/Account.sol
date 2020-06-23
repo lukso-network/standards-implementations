@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.6.0;
 
 import "../_ERCs/IERC725.sol";
@@ -62,7 +63,7 @@ contract Account is IERC725, IUniversalReceiver {
         } else if (_operation == OPERATION_CREATE) {
             performCreate(_value, _data);
         } else if (_operation == OPERATION_CREATE2) {
-            bytes memory saltSlice = slice(_data, _data.length - 32, _data.length);
+            bytes memory saltSlice = slice(_data, _data.length - 32, 32);
             bytes32 salt;
             // convert bytes to bytes32
             assembly {

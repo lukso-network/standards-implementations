@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.6.0;
 
 import "../../_LSPs/ILSP1_UniversalReceiver.sol";
