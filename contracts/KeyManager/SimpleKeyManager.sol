@@ -17,7 +17,7 @@ contract SimpleKeyManager {
     }
 
     modifier onlyOwner() {
-        require(msg.sender == owner, "only-owner-allowed");
+        require(msg.sender == owner, "Only the owner can call this method");
         _;
     }
 

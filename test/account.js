@@ -33,7 +33,7 @@ contract("Account", accounts => {
         it("Refuse upgrades from non-onwer", async () => {
             await expectRevert(
                 account.changeOwner(newOwner, {from: newOwner}),
-                "only-owner-allowed"
+                "Only the owner can call this method"
             );
         });
 
@@ -54,7 +54,7 @@ contract("Account", accounts => {
 
             await expectRevert(
                 account.setData(key, data, {from: newOwner}),
-                "only-owner-allowed"
+                "Only the owner can call this method"
             );
         });
 
@@ -85,17 +85,19 @@ contract("Account", accounts => {
             const amount = ether("10");
             const OPERATION_CALL = 0x0;
 
+            // send money to the account
             await web3.eth.sendTransaction({
                 from: owner,
                 to: account.address,
                 value: amount
             });
 
+            // try to move it away
             await expectRevert(
                 account.execute(OPERATION_CALL, dest, amount, "0x0", {
                     from: newOwner
                 }),
-                "only-owner-allowed"
+                "Only the owner can call this method"
             );
         });
     }); //Context interactions

@@ -19,9 +19,10 @@ contract Account is IERC725, IUniversalReceiver {
 
     /* Public functions */
 
-    receive() external {}
+    receive() external payable {}
 
     function changeOwner(address _newOwner)
+    override
     public
     onlyOwner
     {
@@ -30,6 +31,7 @@ contract Account is IERC725, IUniversalReceiver {
     }
 
     function getData(bytes32 _key)
+    override
     public
     view
     returns (bytes memory _value)
@@ -38,6 +40,7 @@ contract Account is IERC725, IUniversalReceiver {
     }
 
     function setData(bytes32 _key, bytes memory _value)
+    override
     external
     onlyOwner
     {
@@ -46,6 +49,7 @@ contract Account is IERC725, IUniversalReceiver {
     }
 
     function execute(uint256 _operation, address _to, uint256 _value, bytes memory _data)
+    override
     external
     onlyOwner
     {
@@ -54,12 +58,17 @@ contract Account is IERC725, IUniversalReceiver {
         if (_operation == OPERATION_CALL) {
             executeCall(_to, _value, _data, txGas);
         } else if (_operation == OPERATION_DELEGATECALL) {
-            executeDelegateCall(_to, _value, _data, txGas);
+            executeDelegateCall(_to, _data, txGas);
         } else if (_operation == OPERATION_CREATE) {
             performCreate(_value, _data);
         } else if (_operation == OPERATION_CREATE2) {
-            bytes32 salt = slice(_data.length - 32, _data.length);
-            bytes memory data = slice(0, _data.length - 32);
+            bytes memory saltSlice = slice(_data, _data.length - 32, _data.length);
+            bytes32 salt;
+            // convert bytes to bytes32
+            assembly {
+                salt := mload(add(saltSlice, 32))
+            }
+            bytes memory data = slice(_data, 0, _data.length - 32);
             performCreate2(_value, data, salt);
         } else {
             revert("Wrong operation type");
@@ -67,6 +76,8 @@ contract Account is IERC725, IUniversalReceiver {
     }
 
     function universalReceiver(bytes32 typeId, bytes memory data)
+    override
+    virtual
     external
     returns (bytes32 returnValue)
     {

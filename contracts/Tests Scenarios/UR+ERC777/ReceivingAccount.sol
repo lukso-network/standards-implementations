@@ -13,7 +13,7 @@ contract ReceivingAccount is Account, ERC1820Implementer {
         receiver = ERC777Receiver(_newReceiver);
     }
 
-    function universalReceiver(bytes32 typeId ,bytes calldata data) external returns(bytes32 ret){
+    function universalReceiver(bytes32 typeId ,bytes memory data) override external returns(bytes32 ret){
         ret = receiver.universalReceiver(msg.sender, typeId,data);
         emit Received(typeId,data);
     }

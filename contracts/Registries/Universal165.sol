@@ -12,7 +12,7 @@ contract Universal165 is IUniversalReceiver {
         supportedHashes[0x385bbff703a06899061ed4429435f7c048ad373e3eb2af89c65aba709af58dd4] = true;
     }
 
-    function universalReceiver(bytes32 typeId, bytes calldata data) external returns (bytes32) {
+    function universalReceiver(bytes32 typeId, bytes memory data) override external returns (bytes32) {
         require(supportedHashes[typeId], "Type not suported");
     }
 }

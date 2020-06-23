@@ -1,4 +1,4 @@
-pragma solidity ^0.6.0;
+pragma solidity >0.6.1 <0.7.0;
 
 interface IERC725 {
     event DataChanged(bytes32 indexed key, bytes value);

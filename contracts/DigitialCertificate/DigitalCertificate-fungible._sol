@@ -1,16 +1,16 @@
 pragma solidity ^0.6.0;
 
 import "../_ERCs/IERC725.sol";
-import "../Tokens/ERC777-UniversalReceiver.sol";
+import "../Tokens/ERC777-UniversalReceiver._sol";
 
-contract DigitalCertificate is IERC725, ERC777 {
+abstract contract DigitalCertificate is IERC725, ERC777 {
 
     mapping(bytes32 => bytes) store;
 
     address public owner;
 
     modifier onlyOwner() {
-        require(msg.sender == address(owner), "only-owner-allowed");
+        require(msg.sender == address(owner), "Only the owner can call this method");
         _;
     }
 
@@ -36,10 +36,6 @@ contract DigitalCertificate is IERC725, ERC777 {
     {
         store[_key] = _value;
         emit DataChanged(_key, _value);
-    }
-
-    function execute(uint256 _operationType, address _to, uint256 _value, bytes calldata _data) external {
-        // TODO add execute?
     }
 
 }

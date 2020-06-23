@@ -1,7 +1,7 @@
 pragma solidity ^0.6.0;
 
 import "../_ERCs/IERC725.sol";
-import "../Tokens/ERC721-UniversalReceiver.sol";
+import "../Tokens/ERC721-UniversalReceiver._sol";
 
 contract DigitalCertificate is IERC725, ERC721 {
 
@@ -58,7 +58,7 @@ contract DigitalCertificate is IERC725, ERC721 {
     }
 
     modifier onlyOwner() {
-        require(msg.sender == owner, "only-owner-allowed");
+        require(msg.sender == owner, "Only the owner can call this method");
         _;
     }
 }

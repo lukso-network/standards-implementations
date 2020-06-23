@@ -1,0 +1,106 @@
+pragma solidity ^0.6.0;
+
+import "../../node_modules/@openzeppelin/contracts/token/ERC777/ERC777.sol";
+import "../_LSPs/ILSP1_UniversalReceiver.sol";
+
+
+/**
+ * @dev Implementation of the `IERC777` interface.
+ *
+ * This implementation is agnostic to the way tokens are created. This means
+ * that a supply mechanism has to be added in a derived contract using `_mint`.
+ *
+ * Support for ERC20 is included in this contract, as specified by the EIP: both
+ * the ERC777 and ERC20 interfaces can be safely used when interacting with it.
+ * Both `IERC777.Sent` and `IERC20.Transfer` events are emitted on token
+ * movements.
+ *
+ * Additionally, the `granularity` value is hard-coded to `1`, meaning that there
+ * are no special restrictions in the amount of tokens that created, moved, or
+ * destroyed. This makes integration with ERC20 applications seamless.
+ */
+contract ERC777Uni is ERC777, IUniversalReceiver {
+    using SafeMath for uint256;
+    using Address for address;
+
+    /**
+     * @dev `defaultOperators` may be an empty array.
+     */
+    constructor(
+        string memory name,
+        string memory symbol,
+        address[] memory defaultOperators
+    ) IERC777(name, symbol, defaultOperators) public {
+
+    }
+
+    /**
+     * @dev See `IERC777.burn`.
+     *
+     * Also emits a `Transfer` event for ERC20 compatibility.
+     */
+    function burn(uint256 amount, bytes calldata data) external {
+        _burn(msg.sender, msg.sender, amount, data, "");
+    }
+
+
+    /**
+     * @dev Call from.tokensToSend() if the interface is registered
+     * @param operator address operator requesting the transfer
+     * @param from address token holder address
+     * @param to address recipient address
+     * @param amount uint256 amount of tokens to transfer
+     * @param userData bytes extra information provided by the token holder (if any)
+     * @param operatorData bytes extra information provided by the operator (if any)
+     */
+    function _callTokensToSend(
+        address operator,
+        address from,
+        address to,
+        uint256 amount,
+        bytes memory userData,
+        bytes memory operatorData
+    )
+        override
+        private
+    {
+        address implementer = erc1820.getInterfaceImplementer(from, TOKENS_SENDER_INTERFACE_HASH);
+        if (implementer != address(0)) {
+            bytes memory data = abi.encodePacked(operator, from, to, amount, userData, operatorData);
+            IUniversalReceiver(implementer).universalReceiver(TOKENS_SENDER_INTERFACE_HASH, data);
+        }
+    }
+
+    /**
+     * @dev Call to.tokensReceived() if the interface is registered. Reverts if the recipient is a contract but
+     * tokensReceived() was not registered for the recipient
+     * @param operator address operator requesting the transfer
+     * @param from address token holder address
+     * @param to address recipient address
+     * @param amount uint256 amount of tokens to transfer
+     * @param userData bytes extra information provided by the token holder (if any)
+     * @param operatorData bytes extra information provided by the operator (if any)
+     * @param requireReceptionAck if true, contract recipients are required to implement ERC777TokensRecipient
+     */
+    function _callTokensReceived(
+        address operator,
+        address from,
+        address to,
+        uint256 amount,
+        bytes memory userData,
+        bytes memory operatorData,
+        bool requireReceptionAck
+    )
+        override
+        internal
+    {
+        address implementer = erc1820.getInterfaceImplementer(to, TOKENS_RECIPIENT_INTERFACE_HASH);
+        if (implementer != address(0)) {
+            // Call universal receiver on receiving contract, send supported type: TOKENS_RECIPIENT_INTERFACE_HASH
+            bytes memory data = abi.encodePacked(operator, from, to, amount, userData, operatorData);
+            IUniversalReceiver(implementer).universalReceiver(TOKENS_RECIPIENT_INTERFACE_HASH, data);
+        } else if (requireReceptionAck) {
+//            require(!to.isContract(), "ERC777: token recipient contract has no implementer for ERC777TokensRecipient");
+        }
+    }
+}
