@@ -7,7 +7,7 @@ contract("Account", accounts => {
     context("Account Deployment", async () => {
         it("Deploys correctly", async () => {
             const owner = accounts[2];
-            const account = await Account.new({from: owner});
+            const account = await Account.new(owner, {from: owner});
 
             const idOwner = await account.owner.call();
 
@@ -18,7 +18,7 @@ contract("Account", accounts => {
     context("ERC165", async () => {
         it("Supports ERC165", async () => {
             const owner = accounts[2];
-            const account = await Account.new({from: owner});
+            const account = await Account.new(owner, {from: owner});
             const interfaceID = '0x01ffc9a7';
 
             const result = await account.supportsInterface.call(interfaceID);
@@ -27,7 +27,7 @@ contract("Account", accounts => {
         });
         it("Supports ERC725", async () => {
             const owner = accounts[2];
-            const account = await Account.new({from: owner});
+            const account = await Account.new(owner, {from: owner});
             // TODO cange
             const interfaceID = '0xcafecafe';
 
@@ -39,13 +39,20 @@ contract("Account", accounts => {
 
     context("ERC1271", async () => {
         it("Can verify signature from owner", async () => {
-            const owner = accounts[2];
-            const account = await Account.new({from: owner});
-            const interfaceID = '0x01ffc9a7';
 
-            const result = await account.supportsInterface.call(interfaceID);
+            // generate an account
+            web3.eth.accounts.wallet.add('0xcafecafe7D0F0EBcafeC2D7cafe84cafe3248DDcafe8B80C421CE4C55A26cafe');
 
-            assert.isTrue(result, "Interface ID should match");
+            const owner = web3.eth.accounts.wallet[0].address;
+            const account = await Account.new(owner, {from: accounts[2]});
+            const dataToSign = '0xcafecafe';
+            const signature = web3.eth.accounts.wallet[0].sign(dataToSign);
+
+            const result = await account.isValidSignature.call(dataToSign, signature.signature);
+
+            console.log(result);
+
+            assert.isTrue(result, "Should define the signature as valid");
         });
     });
 
@@ -55,7 +62,7 @@ contract("Account", accounts => {
         let account = {};
 
         beforeEach(async () => {
-            account = await Account.new({from: owner});
+            account = await Account.new(owner, {from: owner});
         });
 
         it("Uprade ownership correctly", async () => {
@@ -175,7 +182,7 @@ contract("Account", accounts => {
         const owner = accounts[6];
 
         beforeEach(async () => {
-            account = await Account.new({from: owner});
+            account = await Account.new(owner, {from: owner});
             manager = await KeyManager.new(account.address, {from: owner});
             await account.changeOwner(manager.address, {from: owner});
         });
