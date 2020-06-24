@@ -8,6 +8,9 @@ contract BasicUniversalReceiver is Account {
 
     event TokenReceived(address token, address from, address to, uint256 amount);
 
+    constructor(address _owner) Account(_owner) public {
+    }
+
     function toTokenData(bytes memory _bytes) internal pure returns (address _from, address _to, uint256 _amount) {
         require(_bytes.length == 72, "data has wrong size");
         // solium-disable-next-line security/no-inline-assembly

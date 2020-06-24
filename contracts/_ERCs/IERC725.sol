@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-pragma solidity >0.6.1 <0.7.0;
+pragma solidity >=0.5.0 <0.7.0;
 
 interface IERC725 {
     event DataChanged(bytes32 indexed key, bytes value);

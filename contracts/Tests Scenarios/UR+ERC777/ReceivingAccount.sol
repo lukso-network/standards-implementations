@@ -10,6 +10,10 @@ contract ReceivingAccount is Account, ERC1820Implementer {
     
     ERC777Receiver public receiver;
 
+
+    constructor(address _owner) Account(_owner) public {
+    }
+
     function changeReceiver(address _newReceiver) onlyOwner external {
         receiver = ERC777Receiver(_newReceiver);
     }

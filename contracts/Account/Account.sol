@@ -1,10 +1,27 @@
 // SPDX-License-Identifier: Apache-2.0
+/*
+ * @title ERC725 implementation
+ * @author Fabian Vogelsteller <fabian@lukso.network>
+ *
+ * @dev Implementation of the ERC725 standard + LSP1 universalReceiver + ERC1271 signatureValidation
+ */
+
 pragma solidity ^0.6.0;
 
 import "../_ERCs/IERC725.sol";
+import "../_ERCs/IERC1271.sol";
 import "../_LSPs/ILSP1_UniversalReceiver.sol";
+import "../../node_modules/@openzeppelin/contracts/introspection/ERC165.sol";
 
-contract Account is IERC725, IUniversalReceiver {
+import "../../node_modules/@openzeppelin/contracts/cryptography/ECDSA.sol";
+import "../../node_modules/solidity-bytes-utils/contracts/BytesLib.sol";
+import "../utils/UtilsLib.sol";
+
+contract Account is ERC165, IERC725, IERC1271, IUniversalReceiver {
+
+    bytes4 private constant _INTERFACE_ID_ERC725 = 0xcafecafe;
+    // bytes4(keccak256("isValidSignature(bytes,bytes)")
+    bytes4 constant internal ERC1271MAGICVALUE = 0x20c13b0b;
 
     uint256 constant OPERATION_CALL = 0;
     uint256 constant OPERATION_DELEGATECALL = 1;
@@ -14,8 +31,10 @@ contract Account is IERC725, IUniversalReceiver {
     mapping(bytes32 => bytes) store;
     address public owner;
 
-    constructor() public {
-        owner = msg.sender;
+    constructor(address _owner) public {
+        owner = _owner;
+
+        _registerInterface(_INTERFACE_ID_ERC725);
     }
 
     /* Public functions */
@@ -56,40 +75,77 @@ contract Account is IERC725, IUniversalReceiver {
     {
         uint256 txGas = gasleft() - 2500;
 
+        // CALL
         if (_operation == OPERATION_CALL) {
             executeCall(_to, _value, _data, txGas);
+
+        // DELEGATE CALL
+        // TODO: risky as storage slots can be overridden, remove?
         } else if (_operation == OPERATION_DELEGATECALL) {
+            address currentOwner = owner;
             executeDelegateCall(_to, _data, txGas);
+            // Check that the owner was not overidden
+            require(owner == currentOwner, 'Delegate call is not allowed to modify the owner!');
+
+        // CREATE
         } else if (_operation == OPERATION_CREATE) {
             performCreate(_value, _data);
+
+        // CREATE2
         } else if (_operation == OPERATION_CREATE2) {
-            bytes memory saltSlice = slice(_data, _data.length - 32, 32);
-            bytes32 salt;
-            // convert bytes to bytes32
-            assembly {
-                salt := mload(add(saltSlice, 32))
-            }
-            bytes memory data = slice(_data, 0, _data.length - 32);
+            bytes32 salt = BytesLib.toBytes32(_data, _data.length - 32);
+            bytes memory data = BytesLib.slice(_data, 0, _data.length - 32);
             performCreate2(_value, data, salt);
+
         } else {
             revert("Wrong operation type");
         }
     }
 
-    function universalReceiver(bytes32 typeId, bytes memory data)
+    /**
+    * @notice Notify the smart contract about any received asset
+    * LSP1 interface.
+
+    * @param _typeId The type of transfer received
+    * @param _data The data received
+    */
+    function universalReceiver(bytes32 _typeId, bytes memory _data)
     override
     virtual
     external
     returns (bytes32 returnValue)
     {
-        address universalReceiverAddress = toAddress(getData(0x0000000000000000000000000000000000000000000000000000000000000002), 12);
-        uint256 gasl = gasleft() - 2500;
+        address universalReceiverAddress = BytesLib.toAddress(getData(0x0000000000000000000000000000000000000000000000000000000000000002), 12);
+//        uint256 gasl = gasleft() - 2500;
 
-        // solium-disable-next-line security/no-inline-assembly
-        assembly {
-            returnValue := delegatecall(gasl, universalReceiverAddress, add(data, 0x20), mload(data), 0, 0)
+        // call external contract
+        if (universalReceiverAddress != address(0)) {
+            IUniversalReceiver(universalReceiverAddress).universalReceiver(_typeId, _data);
         }
-//        emit Received(typeId, data);
+
+        emit Received(_typeId, _data);
+    }
+
+
+    /**
+    * @notice Checks if an owner signed `_data`.
+    * ERC1271 interface.
+
+    * @param _data Signed data
+    * @param _signature owner's signature(s) of the data
+    */
+    function isValidSignature(bytes memory _data, bytes memory _signature)
+    override
+    public
+    view
+    returns (bytes4 magicValue)
+    {
+        if (UtilsLib.isContract(owner)){
+            return IERC1271(owner).isValidSignature(_data, _signature);
+        } else {
+            bytes32 signedMessage = keccak256(abi.encodePacked(byte(0x19), byte(0x0), address(this), _data));
+            return owner == ECDSA.recover(signedMessage, _signature) ? ERC1271MAGICVALUE : bytes4(0xffffffff);
+        }
     }
 
     /* Internal functions */
@@ -140,81 +196,6 @@ contract Account is IERC725, IUniversalReceiver {
         emit ContractCreated(newContract);
     }
 
-    function slice(
-        bytes memory _bytes,
-        uint256 _start,
-        uint256 _length
-    )
-    internal
-    pure
-    returns (bytes memory)
-    {
-        require(_bytes.length >= (_start + _length), "Read out of bounds");
-
-        bytes memory tempBytes;
-
-        assembly {
-            switch iszero(_length)
-            case 0 {
-            // Get a location of some free memory and store it in tempBytes as
-            // Solidity does for memory variables.
-                tempBytes := mload(0x40)
-
-            // The first word of the slice result is potentially a partial
-            // word read from the original array. To read it, we calculate
-            // the length of that partial word and start copying that many
-            // bytes into the array. The first word we copy will start with
-            // data we don't care about, but the last `lengthmod` bytes will
-            // land at the beginning of the contents of the new array. When
-            // we're done copying, we overwrite the full first word with
-            // the actual length of the slice.
-                let lengthmod := and(_length, 31)
-
-            // The multiplication in the next line is necessary
-            // because when slicing multiples of 32 bytes (lengthmod == 0)
-            // the following copy loop was copying the origin's length
-            // and then ending prematurely not copying everything it should.
-                let mc := add(add(tempBytes, lengthmod), mul(0x20, iszero(lengthmod)))
-                let end := add(mc, _length)
-
-                for {
-                // The multiplication in the next line has the same exact purpose
-                // as the one above.
-                    let cc := add(add(add(_bytes, lengthmod), mul(0x20, iszero(lengthmod))), _start)
-                } lt(mc, end) {
-                    mc := add(mc, 0x20)
-                    cc := add(cc, 0x20)
-                } {
-                    mstore(mc, mload(cc))
-                }
-
-                mstore(tempBytes, _length)
-
-            //update free-memory pointer
-            //allocating the array padded to 32 bytes like the compiler does now
-                mstore(0x40, and(add(mc, 31), not(31)))
-            }
-            //if we want a zero-length slice let's just return a zero-length array
-            default {
-                tempBytes := mload(0x40)
-
-                mstore(0x40, add(tempBytes, 0x20))
-            }
-        }
-
-        return tempBytes;
-    }
-
-    function toAddress(bytes memory _bytes, uint256 _start) internal pure returns (address) {
-        require(_bytes.length >= (_start + 20), "Read out of bounds");
-        address tempAddress;
-
-        assembly {
-            tempAddress := div(mload(add(add(_bytes, 0x20), _start)), 0x1000000000000000000000000)
-        }
-
-        return tempAddress;
-    }
 
     /* Modifiers */
 

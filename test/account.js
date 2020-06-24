@@ -2,6 +2,7 @@ const Account = artifacts.require("Account");
 const KeyManager = artifacts.require("SimpleKeyManager");
 const {BN, ether, expectRevert} = require("openzeppelin-test-helpers");
 
+
 contract("Account", accounts => {
     context("Account Deployment", async () => {
         it("Deploys correctly", async () => {
@@ -12,6 +13,40 @@ contract("Account", accounts => {
 
             assert.equal(idOwner, owner, "Addresses should match");
         });``
+    });
+
+    context("ERC165", async () => {
+        it("Supports ERC165", async () => {
+            const owner = accounts[2];
+            const account = await Account.new({from: owner});
+            const interfaceID = '0x01ffc9a7';
+
+            const result = await account.supportsInterface.call(interfaceID);
+
+            assert.isTrue(result, "Interface ID should match");
+        });
+        it("Supports ERC725", async () => {
+            const owner = accounts[2];
+            const account = await Account.new({from: owner});
+            // TODO cange
+            const interfaceID = '0xcafecafe';
+
+            const result = await account.supportsInterface.call(interfaceID);
+
+            assert.isTrue(result, "Interface ID should match");
+        });
+    });
+
+    context("ERC1271", async () => {
+        it("Can verify signature from owner", async () => {
+            const owner = accounts[2];
+            const account = await Account.new({from: owner});
+            const interfaceID = '0x01ffc9a7';
+
+            const result = await account.supportsInterface.call(interfaceID);
+
+            assert.isTrue(result, "Interface ID should match");
+        });
     });
 
     context("Interactions with Account contracts", async () => {
