@@ -2,7 +2,6 @@
 pragma solidity ^0.6.0;
 
 import "../_LSPs/ILSP1_UniversalReceiver.sol";
-import "../Account/Account.sol";
 
 contract UniReceiver {
 

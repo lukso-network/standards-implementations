@@ -1,9 +1,14 @@
-const Account = artifacts.require("Account");
-const KeyManager = artifacts.require("SimpleKeyManager");
 const {BN, ether, expectRevert} = require("openzeppelin-test-helpers");
 
-const ERC1271_MAGIC_VALUE = '0x20c13b0b';
+const Account = artifacts.require("Account");
+const KeyManager = artifacts.require("SimpleKeyManager");
+const Checker = artifacts.require("Checker");
+
+// TODO CHNAGE to sha3(universalReceiver(bytes32,bytes)) ??
+const UNIVERSALRECEIVER_KEY = '0x0000000000000000000000000000000000000000000000000000000000000002';
+const ERC1271_MAGIC_VALUE = '0x1626ba7e';
 const ERC1271_FAIL_VALUE = '0xffffffff';
+const RANDOM_BYTES32 = "0xb281fc8c12954d22544db45de3159a39272895b169a852b314f9cc762e44c53b";
 const DUMMY_PRIVATEKEY = '0xcafecafe7D0F0EBcafeC2D7cafe84cafe3248DDcafe8B80C421CE4C55A26cafe';
 // generate an account
 const DUMMY_SIGNER = web3.eth.accounts.wallet.add(DUMMY_PRIVATEKEY);
@@ -174,9 +179,11 @@ contract("Account", accounts => {
             // deploy with added 32 bytes salt
             let receipt = await account.execute(OPERATION_CREATE, dest, '0', "0x608060405234801561001057600080fd5b506040516105f93803806105f98339818101604052602081101561003357600080fd5b810190808051906020019092919050505080600160006101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff16021790555050610564806100956000396000f3fe60806040526004361061003f5760003560e01c806344c028fe1461004157806354f6127f146100fb578063749ebfb81461014a5780638da5cb5b1461018f575b005b34801561004d57600080fd5b506100f96004803603608081101561006457600080fd5b8101908080359060200190929190803573ffffffffffffffffffffffffffffffffffffffff16906020019092919080359060200190929190803590602001906401000000008111156100b557600080fd5b8201836020820111156100c757600080fd5b803590602001918460018302840111640100000000831117156100e957600080fd5b90919293919293905050506101e6565b005b34801561010757600080fd5b506101346004803603602081101561011e57600080fd5b81019080803590602001909291905050506103b7565b6040518082815260200191505060405180910390f35b34801561015657600080fd5b5061018d6004803603604081101561016d57600080fd5b8101908080359060200190929190803590602001909291905050506103d3565b005b34801561019b57600080fd5b506101a46104df565b604051808273ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16815260200191505060405180910390f35b600160009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff163373ffffffffffffffffffffffffffffffffffffffff16146102a9576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004018080602001828103825260128152602001807f6f6e6c792d6f776e65722d616c6c6f776564000000000000000000000000000081525060200191505060405180910390fd5b600085141561030757610301848484848080601f016020809104026020016040519081016040528093929190818152602001838380828437600081840152601f19601f82011690508083019250505050505050610505565b506103b0565b60018514156103aa57600061035f83838080601f016020809104026020016040519081016040528093929190818152602001838380828437600081840152601f19601f8201169050808301925050505050505061051d565b90508073ffffffffffffffffffffffffffffffffffffffff167fcf78cf0d6f3d8371e1075c69c492ab4ec5d8cf23a1a239b6a51a1d00be7ca31260405160405180910390a2506103af565b600080fd5b5b5050505050565b6000806000838152602001908152602001600020549050919050565b600160009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff163373ffffffffffffffffffffffffffffffffffffffff1614610496576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004018080602001828103825260128152602001807f6f6e6c792d6f776e65722d616c6c6f776564000000000000000000000000000081525060200191505060405180910390fd5b806000808481526020019081526020016000208190555080827f35553580e4553c909abeb5764e842ce1f93c45f9f614bde2a2ca5f5b7b7dc0fb60405160405180910390a35050565b600160009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1681565b600080600083516020850186885af190509392505050565b60008151602083016000f0905091905056fea265627a7a723158207fb9c8d804ca4e17aec99dbd7aab0a61583b56ebcbcb7e05589f97043968644364736f6c634300051100320000000000000000000000009501234ef8368466383d698c7fe7bd5ded85b4f6"
                 // 32 bytes salt
-                + "cafecafecafecafecafecafecafecafecafecafecafecafecafecafecafecafe", {
-                from: owner
-            });
+                + "cafecafecafecafecafecafecafecafecafecafecafecafecafecafecafecafe",
+                {
+                    from: owner
+                }
+            );
 
             // console.log(receipt.logs[0].args);
 
@@ -185,7 +192,44 @@ contract("Account", accounts => {
         });
     }); //Context interactions
 
-    context("Using key manager as Account owner", async () => {
+    context("Universal Receiver", async () => {
+        it("Call account and check for 'Received' event", async () => {
+            const owner = accounts[2];
+            const account = await Account.new(owner, {from: owner});
+
+            // use the checker contract to call account
+            let checker = await Checker.new();
+            let receipt = await checker.callImplementationAndReturn(
+                account.address,
+                RANDOM_BYTES32
+            );
+
+            assert.equal(receipt.receipt.rawLogs[0].topics[0], '0x37b8fee406718a41ca8e50ebc5ebcf3e3c12a1e96399c79fcefa8637b45c3e72');
+            assert.equal(receipt.receipt.rawLogs[0].topics[1], RANDOM_BYTES32);
+        });
+        it("Call account and check for 'Test1' event", async () => {
+            const owner = accounts[2];
+            const account = await Account.new(owner, {from: owner});
+            const account2 = await Account.new(owner, {from: owner});
+
+            // set account2 as new receiver for account1
+            await account.setData(UNIVERSALRECEIVER_KEY ,account2.address, {from: owner});
+
+            // use the checker contract to call account
+            let checker = await Checker.new();
+            let receipt = await checker.callImplementationAndReturn(
+                account.address,
+                RANDOM_BYTES32
+            );
+
+            // event should come from account 2
+            assert.equal(receipt.receipt.rawLogs[1].address, account2.address);
+            assert.equal(receipt.receipt.rawLogs[1].topics[0], '0x37b8fee406718a41ca8e50ebc5ebcf3e3c12a1e96399c79fcefa8637b45c3e72');
+            assert.equal(receipt.receipt.rawLogs[1].topics[1], RANDOM_BYTES32);
+        });
+    }); //Context Universal Receiver
+
+    context("Using key manager as owner", async () => {
         let manager,
             account = {};
         const owner = accounts[6];
@@ -201,7 +245,7 @@ contract("Account", accounts => {
             assert.equal(idOwner, manager.address, "Addresses should match");
         });
 
-        context("ERC1271", async () => {
+        context("ERC1271 from KeyManager", async () => {
             it("Can verify signature from executor of keymanager", async () => {
                 const dataToSign = '0xcafecafe';
                 const signature = DUMMY_SIGNER.sign(dataToSign);

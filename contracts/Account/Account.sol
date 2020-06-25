@@ -19,7 +19,7 @@ import "../utils/UtilsLib.sol";
 
 contract Account is ERC165, IERC725, IERC1271, IUniversalReceiver {
 
-    bytes4 internal constant _ERC1271MAGICVALUE = 0x20c13b0b;
+    bytes4 internal constant _ERC1271MAGICVALUE = 0x1626ba7e;
     bytes4 internal constant _ERC1271FAILVALUE = 0xffffffff;
     bytes4 internal constant _INTERFACE_ID_ERC725 = 0xcafecafe;
 
@@ -115,15 +115,21 @@ contract Account is ERC165, IERC725, IERC1271, IUniversalReceiver {
     external
     returns (bytes32 returnValue)
     {
-        address universalReceiverAddress = BytesLib.toAddress(getData(0x0000000000000000000000000000000000000000000000000000000000000002), 12);
-//        uint256 gasl = gasleft() - 2500;
+        // TODO CHNAGE to sha3(universalReceiver(bytes32,bytes)) ??
+        bytes memory receiverData = getData(0x0000000000000000000000000000000000000000000000000000000000000002);
+
+        // TODO add response as third parameter?
+        emit Received(_typeId, _data);
 
         // call external contract
-        if (universalReceiverAddress != address(0)) {
-            IUniversalReceiver(universalReceiverAddress).universalReceiver(_typeId, _data);
+        if (receiverData.length == 20) {
+            address universalReceiverAddress = BytesLib.toAddress(receiverData, 0);
+
+            return IUniversalReceiver(universalReceiverAddress).universalReceiver(_typeId, _data);
         }
 
-        emit Received(_typeId, _data);
+        // if no action was taken
+        return 0x0;
     }
 
 

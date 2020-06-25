@@ -8,7 +8,7 @@ import "../../node_modules/@openzeppelin/contracts/cryptography/ECDSA.sol";
 
 contract SimpleKeyManager is IERC1271 {
 
-    bytes4 internal constant _ERC1271MAGICVALUE = 0x20c13b0b;
+    bytes4 internal constant _ERC1271MAGICVALUE = 0x1626ba7e;
     bytes4 internal constant _ERC1271FAILVALUE = 0xffffffff;
 
     address public owner;
