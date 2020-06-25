@@ -19,9 +19,9 @@ import "../utils/UtilsLib.sol";
 
 contract Account is ERC165, IERC725, IERC1271, IUniversalReceiver {
 
-    bytes4 private constant _INTERFACE_ID_ERC725 = 0xcafecafe;
-    // bytes4(keccak256("isValidSignature(bytes,bytes)")
-    bytes4 constant internal ERC1271MAGICVALUE = 0x20c13b0b;
+    bytes4 internal constant _ERC1271MAGICVALUE = 0x20c13b0b;
+    bytes4 internal constant _ERC1271FAILVALUE = 0xffffffff;
+    bytes4 internal constant _INTERFACE_ID_ERC725 = 0xcafecafe;
 
     uint256 constant OPERATION_CALL = 0;
     uint256 constant OPERATION_DELEGATECALL = 1;
@@ -130,21 +130,24 @@ contract Account is ERC165, IERC725, IERC1271, IUniversalReceiver {
     /**
     * @notice Checks if an owner signed `_data`.
     * ERC1271 interface.
-
-    * @param _data Signed data
+    *
+    * @param _hash hash of the data signed//Arbitrary length data signed on the behalf of address(this)
     * @param _signature owner's signature(s) of the data
     */
-    function isValidSignature(bytes memory _data, bytes memory _signature)
+    function isValidSignature(bytes32 _hash, bytes memory _signature)
     override
     public
     view
     returns (bytes4 magicValue)
     {
         if (UtilsLib.isContract(owner)){
-            return IERC1271(owner).isValidSignature(_data, _signature);
+            return IERC1271(owner).isValidSignature(_hash, _signature);
         } else {
-            bytes32 signedMessage = keccak256(abi.encodePacked(byte(0x19), byte(0x0), address(this), _data));
-            return owner == ECDSA.recover(signedMessage, _signature) ? ERC1271MAGICVALUE : bytes4(0xffffffff);
+//            bytes32 signedMessageHash = keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n", _data.length, _data));
+            //abi.encodePacked(byte(0x19), byte(0x0), address(this), _data));
+            return owner == ECDSA.recover(_hash, _signature)
+                ? _ERC1271MAGICVALUE
+                : _ERC1271FAILVALUE;
         }
     }
 
