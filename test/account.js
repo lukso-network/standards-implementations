@@ -75,6 +75,34 @@ contract("Account", accounts => {
         });
     });
 
+    context("Storage test", async () => {
+        let account;
+        let owner = accounts[2];
+        let count = 1000000000;
+
+        it("Create account", async () => {
+            account = await Account.new(owner, {from: owner});
+
+            assert.equal(await account.owner.call(), owner);
+        });
+        it("Store 32 bytes item 1", async () => {
+            let key = web3.utils.numberToHex(count++);
+            let value = web3.utils.numberToHex(count++);
+            await account.setData(key, value);
+
+            assert.equal(await account.getData(keyalue), value);
+        });
+        for(let i; i < 10; i++) {
+            it("Store 32 bytes item "+ i, async () => {
+                let key = web3.utils.numberToHex(count++);
+                let value = web3.utils.numberToHex(count++);
+                await account.setData(key, value);
+
+                assert.equal(await account.getData(keyalue), value);
+            });
+        }
+    });
+
     context("Interactions with Account contracts", async () => {
         const owner = accounts[3];
         const newOwner = accounts[5];
