@@ -72,7 +72,7 @@ contract Account is ERC165, IERC725, IERC1271, IUniversalReceiver {
     onlyOwner
     {
         store[_key] = _value;
-        storeIds.push(_key);
+        storeIds.push(_key); // 30k more gas on initial set
         emit DataChanged(_key, _value);
     }
 
