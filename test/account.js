@@ -88,19 +88,40 @@ contract("Account", accounts => {
         it("Store 32 bytes item 1", async () => {
             let key = web3.utils.numberToHex(count++);
             let value = web3.utils.numberToHex(count++);
-            await account.setData(key, value);
+            await account.setData(key, value, {from: owner});
 
-            assert.equal(await account.getData(keyalue), value);
+            assert.equal(await account.getData(key), value);
         });
-        for(let i; i < 10; i++) {
-            it("Store 32 bytes item "+ i, async () => {
-                let key = web3.utils.numberToHex(count++);
-                let value = web3.utils.numberToHex(count++);
-                await account.setData(key, value);
+        it("Store 32 bytes item 2", async () => {
+            let key = web3.utils.numberToHex(count++);
+            let value = web3.utils.numberToHex(count++);
+            await account.setData(key, value, {from: owner});
 
-                assert.equal(await account.getData(keyalue), value);
-            });
-        }
+            assert.equal(await account.getData(key), value);
+        });
+        it("Store 32 bytes item 3", async () => {
+            let key = web3.utils.numberToHex(count++);
+            let value = web3.utils.numberToHex(count++);
+            await account.setData(key, value, {from: owner});
+
+            assert.equal(await account.getData(key), value);
+        });
+        it("Store 32 bytes item 4", async () => {
+            let key = web3.utils.numberToHex(count++);
+            let value = web3.utils.numberToHex(count++);
+            await account.setData(key, value, {from: owner});
+
+            assert.equal(await account.getData(key), value);
+        });
+        it("Store a long URL as bytes item 5: https://www.google.com/url?sa=i&url=https%3A%2F%2Ftwitter.com%2Ffeindura&psig=AOvVaw21YL9Wg3jSaEXMHyITcWDe&ust=1593272505347000&source=images&cd=vfe&ved=0CAIQjRxqFwoTCKD-guDon-oCFQAAAAAdAAAAABAD", async () => {
+            let key = web3.utils.numberToHex(count++);
+            let value = web3.utils.utf8ToHex('https://www.google.com/url?sa=i&url=https%3A%2F%2Ftwitter.com%2Ffeindura&psig=AOvVaw21YL9Wg3jSaEXMHyITcWDe&ust=1593272505347000&source=images&cd=vfe&ved=0CAIQjRxqFwoTCKD-guDon-oCFQAAAAAdAAAAABAD');
+            await account.setData(key, value, {from: owner});
+
+            // console.log(value.length, value);
+
+            assert.equal(await account.getData(key), value);
+        });
     });
 
     context("Interactions with Account contracts", async () => {
