@@ -1,8 +1,10 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.6.0;
 
-import "../../node_modules/@openzeppelin/contracts/token/ERC777/ERC777.sol";
 import "../_LSPs/ILSP1_UniversalReceiver.sol";
+
+import "./ERC777.sol";
+import "../../node_modules/@openzeppelin/contracts/introspection/IERC1820Registry.sol";
 
 
 /**
@@ -20,9 +22,17 @@ import "../_LSPs/ILSP1_UniversalReceiver.sol";
  * are no special restrictions in the amount of tokens that created, moved, or
  * destroyed. This makes integration with ERC20 applications seamless.
  */
-contract ERC777Uni is ERC777, IUniversalReceiver {
-    using SafeMath for uint256;
-    using Address for address;
+contract ERC777UniversalReiceiver is ERC777 {
+
+    IERC1820Registry private ERC1820 = IERC1820Registry(0x1820a4B7618BdE71Dce8cdc73aAB6C95905faD24);
+    // TODO change to universalReceiver?
+    // keccak256("ERC777TokensSender")
+    bytes32 constant private _TOKENS_SENDER_INTERFACE_HASH =
+    0x29ddb589b1fb5fc7cf394961c1adf5f8c6454761adf795e67fe149f658abe895;
+
+    // keccak256("ERC777TokensRecipient")
+    bytes32 constant private _TOKENS_RECIPIENT_INTERFACE_HASH =
+    0xb281fc8c12954d22544db45de3159a39272895b169a852b314f9cc762e44c53b;
 
     /**
      * @dev `defaultOperators` may be an empty array.
@@ -31,17 +41,8 @@ contract ERC777Uni is ERC777, IUniversalReceiver {
         string memory name,
         string memory symbol,
         address[] memory defaultOperators
-    ) IERC777(name, symbol, defaultOperators) public {
+    ) ERC777(name, symbol, defaultOperators) public {
 
-    }
-
-    /**
-     * @dev See `IERC777.burn`.
-     *
-     * Also emits a `Transfer` event for ERC20 compatibility.
-     */
-    function burn(uint256 amount, bytes calldata data) external {
-        _burn(msg.sender, msg.sender, amount, data, "");
     }
 
 
@@ -63,12 +64,12 @@ contract ERC777Uni is ERC777, IUniversalReceiver {
         bytes memory operatorData
     )
         override
-        private
+        internal
     {
-        address implementer = erc1820.getInterfaceImplementer(from, TOKENS_SENDER_INTERFACE_HASH);
+        address implementer = ERC1820.getInterfaceImplementer(from, _TOKENS_SENDER_INTERFACE_HASH);
         if (implementer != address(0)) {
             bytes memory data = abi.encodePacked(operator, from, to, amount, userData, operatorData);
-            IUniversalReceiver(implementer).universalReceiver(TOKENS_SENDER_INTERFACE_HASH, data);
+            IUniversalReceiver(implementer).universalReceiver(_TOKENS_SENDER_INTERFACE_HASH, data);
         }
     }
 
@@ -95,11 +96,11 @@ contract ERC777Uni is ERC777, IUniversalReceiver {
         override
         internal
     {
-        address implementer = erc1820.getInterfaceImplementer(to, TOKENS_RECIPIENT_INTERFACE_HASH);
+        address implementer = ERC1820.getInterfaceImplementer(to, _TOKENS_RECIPIENT_INTERFACE_HASH);
         if (implementer != address(0)) {
             // Call universal receiver on receiving contract, send supported type: TOKENS_RECIPIENT_INTERFACE_HASH
             bytes memory data = abi.encodePacked(operator, from, to, amount, userData, operatorData);
-            IUniversalReceiver(implementer).universalReceiver(TOKENS_RECIPIENT_INTERFACE_HASH, data);
+            IUniversalReceiver(implementer).universalReceiver(_TOKENS_RECIPIENT_INTERFACE_HASH, data);
         } else if (requireReceptionAck) {
 //            require(!to.isContract(), "ERC777: token recipient contract has no implementer for ERC777TokensRecipient");
         }

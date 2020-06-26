@@ -11,17 +11,25 @@ pragma solidity ^0.6.0;
 import "../_ERCs/IERC725.sol";
 import "../_ERCs/IERC1271.sol";
 import "../_LSPs/ILSP1_UniversalReceiver.sol";
+import "../../node_modules/@openzeppelin/contracts/introspection/IERC1820Registry.sol";
 import "../../node_modules/@openzeppelin/contracts/introspection/ERC165.sol";
 
 import "../../node_modules/@openzeppelin/contracts/cryptography/ECDSA.sol";
+import "../../node_modules/@openzeppelin/contracts/utils/Create2.sol";
 import "../../node_modules/solidity-bytes-utils/contracts/BytesLib.sol";
 import "../utils/UtilsLib.sol";
 
 contract Account is ERC165, IERC725, IERC1271, IUniversalReceiver {
 
+    IERC1820Registry private ERC1820 = IERC1820Registry(0x1820a4B7618BdE71Dce8cdc73aAB6C95905faD24);
+    // TODO change to universalReceiver?
+    // keccak256("ERC777TokensRecipient")
+    bytes32 constant private _TOKENS_RECIPIENT_INTERFACE_HASH =
+    0xb281fc8c12954d22544db45de3159a39272895b169a852b314f9cc762e44c53b;
+
     bytes4 internal constant _ERC1271MAGICVALUE = 0x1626ba7e;
     bytes4 internal constant _ERC1271FAILVALUE = 0xffffffff;
-    bytes4 internal constant _INTERFACE_ID_ERC725 = 0xcafecafe;
+    bytes4 internal constant _INTERFACE_ID_ERC725 = 0xcafecafe; // TODO change
 
     uint256 constant OPERATION_CALL = 0;
     uint256 constant OPERATION_DELEGATECALL = 1;
@@ -35,12 +43,16 @@ contract Account is ERC165, IERC725, IERC1271, IUniversalReceiver {
     constructor(address _owner) public {
         owner = _owner;
 
+        // ERC 1820
+        ERC1820.setInterfaceImplementer(address(this), _TOKENS_RECIPIENT_INTERFACE_HASH, address(this));
+
+        // ERC 165
         _registerInterface(_INTERFACE_ID_ERC725);
     }
 
     /* non-standard public functions */
 
-    function storeCount() public returns (uint256) {
+    function storeCount() public view returns (uint256) {
         return storeIds.length;
     }
 
@@ -103,7 +115,10 @@ contract Account is ERC165, IERC725, IERC1271, IUniversalReceiver {
         } else if (_operation == OPERATION_CREATE2) {
             bytes32 salt = BytesLib.toBytes32(_data, _data.length - 32);
             bytes memory data = BytesLib.slice(_data, 0, _data.length - 32);
-            performCreate2(_value, data, salt);
+
+            address contractAddress = Create2.deploy(_value, salt, data);
+
+            emit ContractCreated(contractAddress);
 
         } else {
             revert("Wrong operation type");
@@ -197,17 +212,6 @@ contract Account is ERC165, IERC725, IERC1271, IUniversalReceiver {
         // solium-disable-next-line security/no-inline-assembly
         assembly {
             newContract := create(value, add(deploymentData, 0x20), mload(deploymentData))
-        }
-        require(newContract != address(0), "Could not deploy contract");
-        emit ContractCreated(newContract);
-    }
-
-    // Taken from GnosisSafe
-    // https://github.com/gnosis/safe-contracts/blob/development/contracts/libraries/CreateCall.sol
-    function performCreate2(uint256 value, bytes memory deploymentData, bytes32 salt) public returns(address newContract) {
-        // solium-disable-next-line security/no-inline-assembly
-        assembly {
-            newContract := create2(value, add(0x20, deploymentData), mload(deploymentData), salt)
         }
         require(newContract != address(0), "Could not deploy contract");
         emit ContractCreated(newContract);

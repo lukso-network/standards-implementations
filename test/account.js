@@ -1,4 +1,4 @@
-const {BN, ether, expectRevert} = require("openzeppelin-test-helpers");
+const {singletons, BN, ether, expectRevert} = require("openzeppelin-test-helpers");
 
 const Account = artifacts.require("Account");
 const KeyManager = artifacts.require("SimpleKeyManager");
@@ -14,6 +14,11 @@ const DUMMY_PRIVATEKEY = '0xcafecafe7D0F0EBcafeC2D7cafe84cafe3248DDcafe8B80C421C
 const DUMMY_SIGNER = web3.eth.accounts.wallet.add(DUMMY_PRIVATEKEY);
 
 contract("Account", accounts => {
+    let erc1820;
+    beforeEach(async function () {
+        erc1820 = await singletons.ERC1820Registry(accounts[1]);
+    });
+
     context("Account Deployment", async () => {
         it("Deploys correctly", async () => {
             const owner = accounts[2];
