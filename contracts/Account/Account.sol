@@ -28,13 +28,20 @@ contract Account is ERC165, IERC725, IERC1271, IUniversalReceiver {
     uint256 constant OPERATION_CREATE2 = 2;
     uint256 constant OPERATION_CREATE = 3;
 
-    mapping(bytes32 => bytes) store;
+    mapping(bytes32 => bytes) internal store;
+    bytes32[] public storeIds;
     address public owner;
 
     constructor(address _owner) public {
         owner = _owner;
 
         _registerInterface(_INTERFACE_ID_ERC725);
+    }
+
+    /* non-standard public functions */
+
+    function storeCount() public returns (uint256) {
+        return storeIds.length;
     }
 
     /* Public functions */
@@ -65,6 +72,7 @@ contract Account is ERC165, IERC725, IERC1271, IUniversalReceiver {
     onlyOwner
     {
         store[_key] = _value;
+        storeIds.push(_key);
         emit DataChanged(_key, _value);
     }
 
