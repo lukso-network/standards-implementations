@@ -1,24 +1,15 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.6.0;
 
-import "../_ERCs/IERC725.sol";
-import "../../node_modules/@openzeppelin/contracts/introspection/ERC165.sol";
+import "../_ERCs/ERC725Y.sol";
 
-import "../Tokens/ERC777-UniversalReceiver.sol";
+abstract contract DigitalCertificate is ERC725Y {
 
-abstract contract DigitalCertificate is ERC165, IERC725, ERC777UniversalReiceiver {
-
-    bytes4 internal constant _INTERFACE_ID_ERC725 = 0xcafecafe; // TODO change
-
-    mapping(bytes32 => bytes) internal store;
     bytes32[] public storeIds;
-    address public owner;
 
+    // TODO add freeze function to allow migration, add default operator us?
 
-    constructor(address _owner) public {
-        owner = _owner;
-
-        _registerInterface(_INTERFACE_ID_ERC725);
+    constructor(address _newOwner) ERC725Y(_newOwner) public {
     }
 
     /* non-standard public functions */
@@ -28,24 +19,6 @@ abstract contract DigitalCertificate is ERC165, IERC725, ERC777UniversalReiceive
     }
 
     /* Public functions */
-
-    function changeOwner(address _newOwner)
-    override
-    public
-    onlyOwner
-    {
-        owner = _newOwner;
-        emit OwnerChanged(owner);
-    }
-
-    function getData(bytes32 _key)
-    override
-    public
-    view
-    returns (bytes memory _value)
-    {
-        return store[_key];
-    }
 
     function setData(bytes32 _key, bytes memory _value)
     override
@@ -60,8 +33,4 @@ abstract contract DigitalCertificate is ERC165, IERC725, ERC777UniversalReiceive
 
     /* Modifers */
 
-    modifier onlyOwner() {
-        require(msg.sender == owner, "Only the owner can call this method");
-        _;
-    }
 }

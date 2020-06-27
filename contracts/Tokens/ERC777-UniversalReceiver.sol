@@ -25,6 +25,7 @@ import "../../node_modules/@openzeppelin/contracts/introspection/IERC1820Registr
 contract ERC777UniversalReiceiver is ERC777 {
 
     IERC1820Registry private ERC1820 = IERC1820Registry(0x1820a4B7618BdE71Dce8cdc73aAB6C95905faD24);
+
     // TODO change to universalReceiver?
     // keccak256("ERC777TokensSender")
     bytes32 constant private _TOKENS_SENDER_INTERFACE_HASH =
@@ -69,7 +70,7 @@ contract ERC777UniversalReiceiver is ERC777 {
         address implementer = ERC1820.getInterfaceImplementer(from, _TOKENS_SENDER_INTERFACE_HASH);
         if (implementer != address(0)) {
             bytes memory data = abi.encodePacked(operator, from, to, amount, userData, operatorData);
-            IUniversalReceiver(implementer).universalReceiver(_TOKENS_SENDER_INTERFACE_HASH, data);
+            ILSP1(implementer).universalReceiver(_TOKENS_SENDER_INTERFACE_HASH, data);
         }
     }
 
@@ -100,7 +101,7 @@ contract ERC777UniversalReiceiver is ERC777 {
         if (implementer != address(0)) {
             // Call universal receiver on receiving contract, send supported type: TOKENS_RECIPIENT_INTERFACE_HASH
             bytes memory data = abi.encodePacked(operator, from, to, amount, userData, operatorData);
-            IUniversalReceiver(implementer).universalReceiver(_TOKENS_RECIPIENT_INTERFACE_HASH, data);
+            ILSP1(implementer).universalReceiver(_TOKENS_RECIPIENT_INTERFACE_HASH, data);
         } else if (requireReceptionAck) {
 //            require(!to.isContract(), "ERC777: token recipient contract has no implementer for ERC777TokensRecipient");
         }

@@ -4,7 +4,7 @@ pragma solidity ^0.6.0;
 import "../_LSPs/ILSP1_UniversalReceiver.sol";
 
 
-contract Universal165 is IUniversalReceiver {
+contract Universal165 is ILSP1 {
 
     mapping(bytes32 => bool) public supportedHashes;
 

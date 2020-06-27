@@ -1,18 +1,23 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.6.0;
 
+// interfaces
 import "../_ERCs/IERC1271.sol";
-import "../_ERCs/IERC725.sol";
+import "../_ERCs/IERC725X.sol";
 
+// modules
+import "../../node_modules/@openzeppelin/contracts/introspection/ERC165.sol";
+
+// libraries
 import "../../node_modules/@openzeppelin/contracts/cryptography/ECDSA.sol";
 
-contract SimpleKeyManager is IERC1271 {
+contract SimpleKeyManager is ERC165, IERC1271 {
 
-    bytes4 internal constant _ERC1271MAGICVALUE = 0x1626ba7e;
+    bytes4 internal constant _INTERFACE_ID_ERC1271 = 0x1626ba7e;
     bytes4 internal constant _ERC1271FAILVALUE = 0xffffffff;
 
     address public owner;
-    IERC725 public Profile;
+    IERC725X public Profile;
     mapping(address => bool) public allowedExecutor;
 
     event Executed(uint256 _operationType, address _to, uint256 _value, bytes _data);
@@ -27,7 +32,9 @@ contract SimpleKeyManager is IERC1271 {
 
         // allow self execution
         allowedExecutor[_account] = true;
-        Profile = IERC725(_account);
+        Profile = IERC725X(_account);
+
+        _registerInterface(_INTERFACE_ID_ERC1271);
     }
 
     function addExecutor(address exec, bool allowed)
@@ -61,7 +68,7 @@ contract SimpleKeyManager is IERC1271 {
         address recoveredAddress = ECDSA.recover(_hash, _signature);
 
         return (allowedExecutor[recoveredAddress] || recoveredAddress == owner)
-            ? _ERC1271MAGICVALUE
+            ? _INTERFACE_ID_ERC1271
             : _ERC1271FAILVALUE;
     }
 

@@ -8,46 +8,41 @@
 
 pragma solidity ^0.6.0;
 
-import "../_ERCs/IERC725.sol";
+// interfaces
 import "../_ERCs/IERC1271.sol";
 import "../_LSPs/ILSP1_UniversalReceiver.sol";
 import "../../node_modules/@openzeppelin/contracts/introspection/IERC1820Registry.sol";
-import "../../node_modules/@openzeppelin/contracts/introspection/ERC165.sol";
 
+// modules
+import "../../node_modules/@openzeppelin/contracts/introspection/ERC165.sol";
+import "../_ERCs/ERC725X.sol";
+import "../_ERCs/ERC725Y.sol";
+
+// libraries
 import "../../node_modules/@openzeppelin/contracts/cryptography/ECDSA.sol";
-import "../../node_modules/@openzeppelin/contracts/utils/Create2.sol";
-import "../../node_modules/solidity-bytes-utils/contracts/BytesLib.sol";
 import "../utils/UtilsLib.sol";
 
-contract Account is ERC165, IERC725, IERC1271, IUniversalReceiver {
+contract Account is ERC165, ERC725X, ERC725Y, IERC1271, ILSP1 {
 
     IERC1820Registry private ERC1820 = IERC1820Registry(0x1820a4B7618BdE71Dce8cdc73aAB6C95905faD24);
+
     // TODO change to universalReceiver?
     // keccak256("ERC777TokensRecipient")
     bytes32 constant private _TOKENS_RECIPIENT_INTERFACE_HASH =
     0xb281fc8c12954d22544db45de3159a39272895b169a852b314f9cc762e44c53b;
 
-    bytes4 internal constant _ERC1271MAGICVALUE = 0x1626ba7e;
+    bytes4 internal constant _INTERFACE_ID_ERC1271 = 0x1626ba7e;
     bytes4 internal constant _ERC1271FAILVALUE = 0xffffffff;
-    bytes4 internal constant _INTERFACE_ID_ERC725 = 0xcafecafe; // TODO change
 
-    uint256 constant OPERATION_CALL = 0;
-    uint256 constant OPERATION_DELEGATECALL = 1;
-    uint256 constant OPERATION_CREATE2 = 2;
-    uint256 constant OPERATION_CREATE = 3;
-
-    mapping(bytes32 => bytes) internal store;
     bytes32[] public storeIds;
-    address public owner;
+//    address internal override(ERC725X, ERC725Y) _owner;
 
-    constructor(address _owner) public {
-        owner = _owner;
+    constructor(address _newOwner) ERC725X(_newOwner) ERC725Y(_newOwner) public {
 
         // ERC 1820
         ERC1820.setInterfaceImplementer(address(this), _TOKENS_RECIPIENT_INTERFACE_HASH, address(this));
 
-        // ERC 165
-        _registerInterface(_INTERFACE_ID_ERC725);
+        _registerInterface(_INTERFACE_ID_ERC1271);
     }
 
     /* non-standard public functions */
@@ -60,24 +55,6 @@ contract Account is ERC165, IERC725, IERC1271, IUniversalReceiver {
 
     receive() external payable {}
 
-    function changeOwner(address _newOwner)
-    override
-    public
-    onlyOwner
-    {
-        owner = _newOwner;
-        emit OwnerChanged(owner);
-    }
-
-    function getData(bytes32 _key)
-    override
-    public
-    view
-    returns (bytes memory _value)
-    {
-        return store[_key];
-    }
-
     function setData(bytes32 _key, bytes memory _value)
     override
     external
@@ -86,43 +63,6 @@ contract Account is ERC165, IERC725, IERC1271, IUniversalReceiver {
         store[_key] = _value;
         storeIds.push(_key); // 30k more gas on initial set
         emit DataChanged(_key, _value);
-    }
-
-    function execute(uint256 _operation, address _to, uint256 _value, bytes memory _data)
-    override
-    external
-    onlyOwner
-    {
-        uint256 txGas = gasleft() - 2500;
-
-        // CALL
-        if (_operation == OPERATION_CALL) {
-            executeCall(_to, _value, _data, txGas);
-
-        // DELEGATE CALL
-        // TODO: risky as storage slots can be overridden, remove?
-        } else if (_operation == OPERATION_DELEGATECALL) {
-            address currentOwner = owner;
-            executeDelegateCall(_to, _data, txGas);
-            // Check that the owner was not overidden
-            require(owner == currentOwner, 'Delegate call is not allowed to modify the owner!');
-
-        // CREATE
-        } else if (_operation == OPERATION_CREATE) {
-            performCreate(_value, _data);
-
-        // CREATE2
-        } else if (_operation == OPERATION_CREATE2) {
-            bytes32 salt = BytesLib.toBytes32(_data, _data.length - 32);
-            bytes memory data = BytesLib.slice(_data, 0, _data.length - 32);
-
-            address contractAddress = Create2.deploy(_value, salt, data);
-
-            emit ContractCreated(contractAddress);
-
-        } else {
-            revert("Wrong operation type");
-        }
     }
 
     /**
@@ -148,7 +88,7 @@ contract Account is ERC165, IERC725, IERC1271, IUniversalReceiver {
         if (receiverData.length == 20) {
             address universalReceiverAddress = BytesLib.toAddress(receiverData, 0);
 
-            return IUniversalReceiver(universalReceiverAddress).universalReceiver(_typeId, _data);
+            return ILSP1(universalReceiverAddress).universalReceiver(_typeId, _data);
         }
 
         // if no action was taken
@@ -169,59 +109,14 @@ contract Account is ERC165, IERC725, IERC1271, IUniversalReceiver {
     view
     returns (bytes4 magicValue)
     {
-        if (UtilsLib.isContract(owner)){
-            return IERC1271(owner).isValidSignature(_hash, _signature);
+        if (UtilsLib.isContract(_owner)){
+            return IERC1271(_owner).isValidSignature(_hash, _signature);
         } else {
 //            bytes32 signedMessageHash = keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n", _data.length, _data));
             //abi.encodePacked(byte(0x19), byte(0x0), address(this), _data));
-            return owner == ECDSA.recover(_hash, _signature)
-                ? _ERC1271MAGICVALUE
+            return _owner == ECDSA.recover(_hash, _signature)
+                ? _INTERFACE_ID_ERC1271
                 : _ERC1271FAILVALUE;
         }
-    }
-
-    /* Internal functions */
-
-    // Taken from GnosisSafe
-    // https://github.com/gnosis/safe-contracts/blob/development/contracts/base/Executor.sol
-    function executeCall(address to, uint256 value, bytes memory data, uint256 txGas)
-    internal
-    returns (bool success)
-    {
-        // solium-disable-next-line security/no-inline-assembly
-        assembly {
-            success := call(txGas, to, value, add(data, 0x20), mload(data), 0, 0)
-        }
-    }
-
-    // Taken from GnosisSafe
-    // https://github.com/gnosis/safe-contracts/blob/development/contracts/base/Executor.sol
-    function executeDelegateCall(address to, bytes memory data, uint256 txGas)
-    internal
-    returns (bool success)
-    {
-        // solium-disable-next-line security/no-inline-assembly
-        assembly {
-            success := delegatecall(txGas, to, add(data, 0x20), mload(data), 0, 0)
-        }
-    }
-
-    // Taken from GnosisSafe
-    // https://github.com/gnosis/safe-contracts/blob/development/contracts/libraries/CreateCall.sol
-    function performCreate(uint256 value, bytes memory deploymentData) public returns(address newContract) {
-        // solium-disable-next-line security/no-inline-assembly
-        assembly {
-            newContract := create(value, add(deploymentData, 0x20), mload(deploymentData))
-        }
-        require(newContract != address(0), "Could not deploy contract");
-        emit ContractCreated(newContract);
-    }
-
-
-    /* Modifiers */
-
-    modifier onlyOwner() {
-        require(msg.sender == owner, "Only the owner can call this method");
-        _;
     }
 }

@@ -20,14 +20,14 @@ contract("Account", accounts => {
     });
 
     context("Account Deployment", async () => {
-        it("Deploys correctly", async () => {
+        it("Deploys correctly, and compare owners", async () => {
             const owner = accounts[2];
             const account = await Account.new(owner, {from: owner});
 
             const idOwner = await account.owner.call();
 
             assert.equal(idOwner, owner, "Addresses should match");
-        });``
+        });
     });
 
     context("ERC165", async () => {
@@ -38,17 +38,37 @@ contract("Account", accounts => {
 
             const result = await account.supportsInterface.call(interfaceID);
 
-            assert.isTrue(result, "Interface ID should match");
+            assert.isTrue(result);
         });
-        it("Supports ERC725", async () => {
+        it("Supports ERC725X", async () => {
             const owner = accounts[2];
             const account = await Account.new(owner, {from: owner});
             // TODO cange
-            const interfaceID = '0xcafecafe';
+            const interfaceID = '0x6f9c3944';
 
             const result = await account.supportsInterface.call(interfaceID);
 
-            assert.isTrue(result, "Interface ID should match");
+            assert.isTrue(result);
+        });
+        it("Supports ERC725Y", async () => {
+            const owner = accounts[2];
+            const account = await Account.new(owner, {from: owner});
+            // TODO cange
+            const interfaceID = '0x00896ac9';
+
+            const result = await account.supportsInterface.call(interfaceID);
+
+            assert.isTrue(result);
+        });
+        it("Supports ERC1271", async () => {
+            const owner = accounts[2];
+            const account = await Account.new(owner, {from: owner});
+            // TODO cange
+            const interfaceID = '0x1626ba7e';
+
+            const result = await account.supportsInterface.call(interfaceID);
+
+            assert.isTrue(result);
         });
     });
 
