@@ -43,8 +43,7 @@ contract("Account", accounts => {
         it("Supports ERC725X", async () => {
             const owner = accounts[2];
             const account = await Account.new(owner, {from: owner});
-            // TODO cange
-            const interfaceID = '0x6f9c3944';
+            const interfaceID = '0x44c028fe';
 
             const result = await account.supportsInterface.call(interfaceID);
 
@@ -53,8 +52,7 @@ contract("Account", accounts => {
         it("Supports ERC725Y", async () => {
             const owner = accounts[2];
             const account = await Account.new(owner, {from: owner});
-            // TODO cange
-            const interfaceID = '0x00896ac9';
+            const interfaceID = '0x2bd57b73';
 
             const result = await account.supportsInterface.call(interfaceID);
 
@@ -63,7 +61,6 @@ contract("Account", accounts => {
         it("Supports ERC1271", async () => {
             const owner = accounts[2];
             const account = await Account.new(owner, {from: owner});
-            // TODO cange
             const interfaceID = '0x1626ba7e';
 
             const result = await account.supportsInterface.call(interfaceID);
@@ -154,7 +151,7 @@ contract("Account", accounts => {
         });
 
         it("Uprade ownership correctly", async () => {
-            await account.changeOwner(newOwner, {from: owner});
+            await account.transferOwnership(newOwner, {from: owner});
             const idOwner = await account.owner.call();
 
             assert.equal(idOwner, newOwner, "Addresses should match");
@@ -162,8 +159,8 @@ contract("Account", accounts => {
 
         it("Refuse upgrades from non-onwer", async () => {
             await expectRevert(
-                account.changeOwner(newOwner, {from: newOwner}),
-                "Only the owner can call this method"
+                account.transferOwnership(newOwner, {from: newOwner}),
+                "Ownable: caller is not the owner"
             );
         });
 
@@ -184,7 +181,7 @@ contract("Account", accounts => {
 
             await expectRevert(
                 account.setData(key, data, {from: newOwner}),
-                "Only the owner can call this method"
+                "Ownable: caller is not the owner"
             );
         });
 
@@ -227,7 +224,7 @@ contract("Account", accounts => {
                 account.execute(OPERATION_CALL, dest, amount, "0x0", {
                     from: newOwner
                 }),
-                "Only the owner can call this method"
+                "Ownable: caller is not the owner"
             );
         });
 
@@ -311,7 +308,7 @@ contract("Account", accounts => {
         beforeEach(async () => {
             account = await Account.new(owner, {from: owner});
             manager = await KeyManager.new(account.address, owner, {from: owner});
-            await account.changeOwner(manager.address, {from: owner});
+            await account.transferOwnership(manager.address, {from: owner});
         });
 
         it("Account should have owner as manager", async () => {
@@ -335,7 +332,7 @@ contract("Account", accounts => {
 
                 account = await Account.new(owner, {from: owner});
                 manager = await KeyManager.new(account.address, DUMMY_SIGNER.address, {from: owner});
-                await account.changeOwner(manager.address, {from: owner});
+                await account.transferOwnership(manager.address, {from: owner});
 
                 const dataToSign = '0xcafecafe';
                 const signature = DUMMY_SIGNER.sign(dataToSign);

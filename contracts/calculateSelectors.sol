@@ -17,17 +17,13 @@ contract CalculateERC165Selectors {
     function calculateSelectorERC725X() public pure returns (bytes4) {
         IERC725X i;
 
-        return i.owner.selector
-        ^ i.changeOwner.selector
-        ^ i.execute.selector;
+        return i.execute.selector;
     }
 
     function calculateSelectorERC725Y() public pure returns (bytes4) {
         IERC725Y i;
 
-        return i.owner.selector
-        ^ i.changeOwner.selector
-        ^ i.getData.selector
+        return i.getData.selector
         ^ i.setData.selector;
     }
 

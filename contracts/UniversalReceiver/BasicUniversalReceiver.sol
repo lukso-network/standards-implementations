@@ -23,7 +23,7 @@ contract BasicUniversalReceiver is Account {
 
     function universalReceiver(bytes32 typeId, bytes memory data) override external returns (bytes32) {
         (address from, address to,uint amount) = toTokenData(data);
-        emit TokenReceived(msg.sender, from, to, amount);
+        emit TokenReceived(_msgSender(), from, to, amount);
         emit Received(typeId, data);
     }
 

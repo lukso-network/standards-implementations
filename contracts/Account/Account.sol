@@ -5,7 +5,6 @@
  *
  * @dev Implementation of the ERC725 standard + LSP1 universalReceiver + ERC1271 signatureValidation
  */
-
 pragma solidity ^0.6.0;
 
 // interfaces
@@ -34,8 +33,7 @@ contract Account is ERC165, ERC725X, ERC725Y, IERC1271, ILSP1 {
     bytes4 internal constant _INTERFACE_ID_ERC1271 = 0x1626ba7e;
     bytes4 internal constant _ERC1271FAILVALUE = 0xffffffff;
 
-    bytes32[] public storeIds;
-//    address internal override(ERC725X, ERC725Y) _owner;
+    bytes32[] public storeKeys;
 
     constructor(address _newOwner) ERC725X(_newOwner) ERC725Y(_newOwner) public {
 
@@ -48,7 +46,7 @@ contract Account is ERC165, ERC725X, ERC725Y, IERC1271, ILSP1 {
     /* non-standard public functions */
 
     function storeCount() public view returns (uint256) {
-        return storeIds.length;
+        return storeKeys.length;
     }
 
     /* Public functions */
@@ -61,7 +59,7 @@ contract Account is ERC165, ERC725X, ERC725Y, IERC1271, ILSP1 {
     onlyOwner
     {
         store[_key] = _value;
-        storeIds.push(_key); // 30k more gas on initial set
+        storeKeys.push(_key); // 30k more gas on initial set
         emit DataChanged(_key, _value);
     }
 
@@ -109,12 +107,12 @@ contract Account is ERC165, ERC725X, ERC725Y, IERC1271, ILSP1 {
     view
     returns (bytes4 magicValue)
     {
-        if (UtilsLib.isContract(_owner)){
-            return IERC1271(_owner).isValidSignature(_hash, _signature);
+        if (UtilsLib.isContract(owner())){
+            return IERC1271(owner()).isValidSignature(_hash, _signature);
         } else {
 //            bytes32 signedMessageHash = keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n", _data.length, _data));
             //abi.encodePacked(byte(0x19), byte(0x0), address(this), _data));
-            return _owner == ECDSA.recover(_hash, _signature)
+            return owner() == ECDSA.recover(_hash, _signature)
                 ? _INTERFACE_ID_ERC1271
                 : _ERC1271FAILVALUE;
         }

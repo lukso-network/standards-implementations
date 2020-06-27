@@ -1,13 +1,38 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity >=0.5.0 <0.7.0;
 
-import "../_ERCs/IERC725base.sol";
+/**
+ * @dev Contract module which provides the ability to call arbitrary functions at any other smart contract and itself,
+ * including using `delegatecall`, as well creating contracts using `create` and `create2`.
+ * This is the basis for a smart contract based account system, but could also be used as a proxy account system.
+ *
+ * ERC 165 interface id: 0x44c028fe
+ *
+ * `execute` should only be callable by the owner of the contract set via ERC173.
+ */
+interface IERC725X  /* is ERC165, ERC173 */ {
 
-interface IERC725X is IERC725base {
-//    event OwnerChanged(address indexed ownerAddress);
+    /**
+    * @dev Emitted when a contract is created.
+    */
     event ContractCreated(address indexed contractAddress);
 
-//    function owner() external view returns (address);
-//    function changeOwner(address newOwner) external;
+
+    /**
+     * @dev Executes any other smart contract.
+     * SHOULD only be callable by the owner of the contract set via ERC173.
+     *
+     * Requirements:
+     *
+     * - `operationType`, the operation to execute. So far defined is:
+     *     CALL = 0;
+     *     DELEGATECALL = 1;
+     *     CREATE2 = 2;
+     *     CREATE = 3;
+     *
+     * - `data` the call data that will be used with the contract at `to`
+     *
+     * Emits a {ContractCreated} event, when a contract is created under `operationType` 2 and 3.
+     */
     function execute(uint256 operationType, address to, uint256 value, bytes memory data) external;
 }

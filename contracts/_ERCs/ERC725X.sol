@@ -5,31 +5,56 @@ pragma solidity ^0.6.0;
 import "../_ERCs/IERC725X.sol";
 
 // modules
-import "./ERC725base.sol";
+import "../../node_modules/@openzeppelin/contracts/access/Ownable.sol";
 import "../../node_modules/@openzeppelin/contracts/introspection/ERC165.sol";
 
 // libraries
 import "../../node_modules/@openzeppelin/contracts/utils/Create2.sol";
 import "../../node_modules/solidity-bytes-utils/contracts/BytesLib.sol";
 
-contract ERC725X is ERC165, IERC725X, ERC725base  {
+/**
+ * @title ERC725 X executor
+ * @dev Implementation of a contract module which provides the ability to call arbitrary functions at any other smart contract and itself,
+ * including using `delegatecall`, as well creating contracts using `create` and `create2`.
+ * This is the basis for a smart contract based account system, but could also be used as a proxy account system.
+ *
+ * `execute` MUST only be called by the owner of the contract set via ERC173.
+ *
+ *  @author Fabian Vogelsteller <fabian@lukso.network>
+ */
+contract ERC725X is ERC165, Ownable, IERC725X  {
 
-    bytes4 internal constant _INTERFACE_ID_ERC725X = 0x6f9c3944;
+    bytes4 internal constant _INTERFACE_ID_ERC725X = 0x44c028fe;
 
     uint256 constant OPERATION_CALL = 0;
     uint256 constant OPERATION_DELEGATECALL = 1;
     uint256 constant OPERATION_CREATE2 = 2;
     uint256 constant OPERATION_CREATE = 3;
 
-
+    /**
+     * @notice Sets the owner of the contract
+     * @param _newOwner the owner of the contract.
+     */
     constructor(address _newOwner) public {
-        _owner = _newOwner;
+        // This is necessary to prevent a contract that implements both ERC725X and ERC725Y to call both constructors
+        if(_newOwner != owner()) {
+            transferOwnership(_newOwner);
+        }
 
         _registerInterface(_INTERFACE_ID_ERC725X);
     }
 
     /* Public functions */
 
+    /**
+     * @notice Executes any other smart contract. Is only callable by the owner.
+     *
+     *
+     * @param _operation the operation to execute: CALL = 0; DELEGATECALL = 1; CREATE2 = 2; CREATE = 3;
+     * @param _to the smart contract or address to interact with. `_to` will be unused if a contract is created (operation 2 and 3)
+     * @param _value the value of ETH to transfer
+     * @param _data the call data, or the contract data to deploy
+     */
     function execute(uint256 _operation, address _to, uint256 _value, bytes memory _data)
     external
     override
@@ -44,10 +69,10 @@ contract ERC725X is ERC165, IERC725X, ERC725base  {
         // DELEGATE CALL
         // TODO: risky as storage slots can be overridden, remove?
         } else if (_operation == OPERATION_DELEGATECALL) {
-            address currentOwner = _owner;
+            address currentOwner = owner();
             executeDelegateCall(_to, _data, txGas);
-            // Check that the owner was not overidden
-            require(_owner == currentOwner, 'Delegate call is not allowed to modify the owner!');
+            // Check that the owner was not overridden
+            require(owner() == currentOwner, 'Delegate call is not allowed to modify the owner!');
 
         // CREATE
         } else if (_operation == OPERATION_CREATE) {

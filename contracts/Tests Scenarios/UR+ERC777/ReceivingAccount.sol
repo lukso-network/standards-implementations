@@ -19,7 +19,7 @@ contract ReceivingAccount is Account, ERC1820Implementer {
     }
 
     function universalReceiver(bytes32 typeId ,bytes memory data) override external returns(bytes32 ret){
-        ret = receiver.universalReceiver(msg.sender, typeId,data);
+        ret = receiver.universalReceiver(_msgSender(), typeId,data);
         emit Received(typeId,data);
     }
 

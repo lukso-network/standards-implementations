@@ -6,29 +6,30 @@ import "../_ERCs/IERC1271.sol";
 import "../_ERCs/IERC725X.sol";
 
 // modules
+import "../../node_modules/@openzeppelin/contracts/access/Ownable.sol";
 import "../../node_modules/@openzeppelin/contracts/introspection/ERC165.sol";
 
 // libraries
 import "../../node_modules/@openzeppelin/contracts/cryptography/ECDSA.sol";
 
-contract SimpleKeyManager is ERC165, IERC1271 {
+contract SimpleKeyManager is ERC165, Ownable, IERC1271 {
 
     bytes4 internal constant _INTERFACE_ID_ERC1271 = 0x1626ba7e;
     bytes4 internal constant _ERC1271FAILVALUE = 0xffffffff;
 
-    address public owner;
     IERC725X public Profile;
     mapping(address => bool) public allowedExecutor;
 
     event Executed(uint256 _operationType, address _to, uint256 _value, bytes _data);
 
 
-    constructor(address _account, address _owner)
+    constructor(address _account, address _newOwner)
     public
     payable {
-        owner = _owner;
+        transferOwnership(_newOwner);
+
         // make owner an executor
-        allowedExecutor[owner] = true;
+        allowedExecutor[_newOwner] = true;
 
         // allow self execution
         allowedExecutor[_account] = true;
@@ -67,19 +68,15 @@ contract SimpleKeyManager is ERC165, IERC1271 {
     {
         address recoveredAddress = ECDSA.recover(_hash, _signature);
 
-        return (allowedExecutor[recoveredAddress] || recoveredAddress == owner)
+        return (allowedExecutor[recoveredAddress] || recoveredAddress == owner())
             ? _INTERFACE_ID_ERC1271
             : _ERC1271FAILVALUE;
     }
 
     /* Modifiers */
 
-    modifier onlyOwner() {
-        require(msg.sender == owner, "Only the owner can call this method");
-        _;
-    }
     modifier onlyExecutor() {
-        require(allowedExecutor[msg.sender], "Only a valid executor can call this method");
+        require(allowedExecutor[_msgSender()], "Only a valid executor can call this method");
         _;
     }
 }

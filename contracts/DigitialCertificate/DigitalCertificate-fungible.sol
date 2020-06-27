@@ -5,7 +5,7 @@ import "../_ERCs/ERC725Y.sol";
 
 abstract contract DigitalCertificate is ERC725Y {
 
-    bytes32[] public storeIds;
+    bytes32[] public storeKeys;
 
     // TODO add freeze function to allow migration, add default operator us?
 
@@ -15,7 +15,7 @@ abstract contract DigitalCertificate is ERC725Y {
     /* non-standard public functions */
 
     function storeCount() public view returns (uint256) {
-        return storeIds.length;
+        return storeKeys.length;
     }
 
     /* Public functions */
@@ -26,7 +26,7 @@ abstract contract DigitalCertificate is ERC725Y {
     onlyOwner
     {
         store[_key] = _value;
-        storeIds.push(_key); // 30k more gas on initial set
+        storeKeys.push(_key); // 30k more gas on initial set
         emit DataChanged(_key, _value);
     }
 
