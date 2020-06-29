@@ -77,7 +77,7 @@ contract Account is ERC165, ERC725, IERC1271, ILSP1 {
     external
     returns (bytes32 returnValue)
     {
-        // TODO CHNAGE to sha3(universalReceiver(bytes32,bytes)) ??
+        // TODO CHANGE to sha3(universalReceiver(bytes32,bytes)) ??
         bytes memory receiverData = getData(0x0000000000000000000000000000000000000000000000000000000000000002);
 
         // TODO add response as third parameter?
