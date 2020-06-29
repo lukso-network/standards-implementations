@@ -34,5 +34,5 @@ interface IERC725X  /* is ERC165, ERC173 */ {
      *
      * Emits a {ContractCreated} event, when a contract is created under `operationType` 2 and 3.
      */
-    function execute(uint256 operationType, address to, uint256 value, bytes memory data) external;
+    function execute(uint256 operationType, address to, uint256 value, bytes memory data) external payable;
 }

@@ -139,6 +139,26 @@ contract("Account", accounts => {
 
             assert.equal(await account.getData(key), value);
         });
+        it("Store 32 bytes item 6", async () => {
+            let key = web3.utils.numberToHex(count);
+            let value = web3.utils.numberToHex(count);
+            await account.setData(key, value, {from: owner});
+
+            assert.equal(await account.getData(key), value);
+        });
+        it("storeCount should be 6", async () => {
+            assert.equal(await account.storeCount(), 6);
+        });
+        it("Update 32 bytes item 6", async () => {
+            let key = web3.utils.numberToHex(count);
+            let value = web3.utils.numberToHex(count);
+            await account.setData(key, value, {from: owner});
+
+            assert.equal(await account.getData(key), value);
+        });
+        it("storeCount should be 6", async () => {
+            assert.equal(await account.storeCount(), 6);
+        });
     });
 
     context("Interactions with Account contracts", async () => {

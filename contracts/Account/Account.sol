@@ -13,15 +13,14 @@ import "../_LSPs/ILSP1_UniversalReceiver.sol";
 import "../../node_modules/@openzeppelin/contracts/introspection/IERC1820Registry.sol";
 
 // modules
+import "../_ERCs/ERC725.sol";
 import "../../node_modules/@openzeppelin/contracts/introspection/ERC165.sol";
-import "../_ERCs/ERC725X.sol";
-import "../_ERCs/ERC725Y.sol";
 
 // libraries
 import "../../node_modules/@openzeppelin/contracts/cryptography/ECDSA.sol";
 import "../utils/UtilsLib.sol";
 
-contract Account is ERC165, ERC725X, ERC725Y, IERC1271, ILSP1 {
+contract Account is ERC165, ERC725, IERC1271, ILSP1 {
 
     IERC1820Registry private ERC1820 = IERC1820Registry(0x1820a4B7618BdE71Dce8cdc73aAB6C95905faD24);
 
@@ -35,7 +34,7 @@ contract Account is ERC165, ERC725X, ERC725Y, IERC1271, ILSP1 {
 
     bytes32[] public storeKeys;
 
-    constructor(address _newOwner) ERC725X(_newOwner) ERC725Y(_newOwner) public {
+    constructor(address _newOwner) ERC725(_newOwner) public {
 
         // ERC 1820
         ERC1820.setInterfaceImplementer(address(this), _TOKENS_RECIPIENT_INTERFACE_HASH, address(this));
@@ -58,8 +57,10 @@ contract Account is ERC165, ERC725X, ERC725Y, IERC1271, ILSP1 {
     external
     onlyOwner
     {
+        if(store[_key].length == 0) {
+            storeKeys.push(_key); // 30k more gas on initial set
+        }
         store[_key] = _value;
-        storeKeys.push(_key); // 30k more gas on initial set
         emit DataChanged(_key, _value);
     }
 

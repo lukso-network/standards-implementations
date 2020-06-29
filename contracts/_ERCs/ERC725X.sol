@@ -57,6 +57,7 @@ contract ERC725X is ERC165, Ownable, IERC725X  {
      */
     function execute(uint256 _operation, address _to, uint256 _value, bytes memory _data)
     external
+    payable
     override
     onlyOwner
     {
