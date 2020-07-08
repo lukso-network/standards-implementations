@@ -21,7 +21,7 @@ contract("ERC777", accounts => {
             );
         });
         beforeEach(async () => {
-            erc777 = await ERC777UniversalReceiver.new("ERC", "777", [accounts[0]]);
+            erc777 = await ERC777UniversalReceiver.new("MyToken", "TKN", [accounts[0]]);
             account = await ReceivingAccount.new({from: owner});
             receiver = await ERC777Receiver.new();
             await account.changeReceiver(receiver.address, {
