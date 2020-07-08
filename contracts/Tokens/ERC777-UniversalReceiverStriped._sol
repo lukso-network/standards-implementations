@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.6.0;
 
-import "../../node_modules/@openzeppelin/contracts/token/ERC777/IERC777.sol";
-import "../../node_modules/@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "../../node_modules/@openzeppelin/contracts/math/SafeMath.sol";
-import "../../node_modules/@openzeppelin/contracts/utils/Address.sol";
+import "@openzeppelin/contracts/token/ERC777/IERC777.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/math/SafeMath.sol";
+import "@openzeppelin/contracts/utils/Address.sol";
 import "../_LSPs/ILSP1_UniversalReceiver.sol";
 
 /// @title BareMockToken
@@ -24,13 +24,12 @@ contract ERC777Striped is IERC777, IERC20 {
 
     // We inline the result of the following hashes because Solidity doesn't resolve them at compile time.
     // See https://github.com/ethereum/solidity/issues/4024.
-        // keccak256("ERC777TokensSender")
-    bytes32 constant private TOKENS_SENDER_INTERFACE_HASH =
-        0x29ddb589b1fb5fc7cf394961c1adf5f8c6454761adf795e67fe149f658abe895;
 
-    // keccak256("ERC777TokensRecipient")
-    bytes32 constant private TOKENS_RECIPIENT_INTERFACE_HASH =
-        0xb281fc8c12954d22544db45de3159a39272895b169a852b314f9cc762e44c53b;
+    bytes32 constant private _TOKENS_SENDER_INTERFACE_HASH =
+    0x22e964c6c6533c4e2ffcce1f9d729c317892402b9e59846cf013234330ee9439; // keccak256("LSP1ERC777TokensSender")
+
+    bytes32 constant private _TOKENS_RECIPIENT_INTERFACE_HASH =
+    0x02f4a83ca167ac46c541f87934d1b98de70d2b06ad0aaefae65c5fdda87ae405; // keccak256("LSP1ERC777TokensRecipient")
 
     // This isn't ever read from - it's only used to respond to the defaultOperators query.
     address[] private _defaultOperatorsArray;

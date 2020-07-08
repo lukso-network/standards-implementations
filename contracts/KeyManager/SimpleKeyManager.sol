@@ -2,15 +2,15 @@
 pragma solidity ^0.6.0;
 
 // interfaces
+import "../../node_modules/erc725/contracts/ERC725/IERC725X.sol";
 import "../_ERCs/IERC1271.sol";
-import "../_ERCs/IERC725X.sol";
 
 // modules
-import "../../node_modules/@openzeppelin/contracts/access/Ownable.sol";
-import "../../node_modules/@openzeppelin/contracts/introspection/ERC165.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/introspection/ERC165.sol";
 
 // libraries
-import "../../node_modules/@openzeppelin/contracts/cryptography/ECDSA.sol";
+import "@openzeppelin/contracts/cryptography/ECDSA.sol";
 
 contract SimpleKeyManager is ERC165, Ownable, IERC1271 {
 

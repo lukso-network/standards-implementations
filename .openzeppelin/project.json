@@ -1,0 +1,16 @@
+{
+  "manifestVersion": "2.2",
+  "contracts": {},
+  "dependencies": {},
+  "name": "standards-scenarios",
+  "version": "1.0.0",
+  "compiler": {
+    "compilerSettings": {
+      "optimizer": {}
+    },
+    "typechain": {
+      "enabled": false
+    }
+  },
+  "telemetryOptIn": false
+}

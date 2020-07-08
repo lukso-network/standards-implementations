@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.6.0;
 
-import "../_ERCs/ERC725Y.sol";
+import "../../node_modules/erc725/contracts/ERC725/ERC725Y.sol";
 
 abstract contract DigitalCertificate is ERC725Y {
 

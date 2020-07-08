@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: CC0-1.0
 pragma solidity >=0.5.0 <0.7.0;
 
 /**
@@ -6,8 +6,8 @@ pragma solidity >=0.5.0 <0.7.0;
  */
 interface IERC1271 {
 
-//    bytes4 internal constant _ERC1271MAGICVALUE = 0x1626ba7e;
-//    bytes4 internal constant _ERC1271FAILVALUE = 0xffffffff;
+    //    bytes4 internal constant _ERC1271MAGICVALUE = 0x1626ba7e;
+    //    bytes4 internal constant _ERC1271FAILVALUE = 0xffffffff;
 
     /**
      * @dev Should return whether the signature provided is valid for the provided data

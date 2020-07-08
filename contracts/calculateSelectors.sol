@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.6.0;
-import "./_ERCs/IERC725X.sol";
-import "./_ERCs/IERC725Y.sol";
+import "../node_modules/erc725/contracts/ERC725/IERC725X.sol";
+import "../node_modules/erc725/contracts/ERC725/IERC725Y.sol";
 import "./_ERCs/IERC1271.sol";
 import "./_LSPs/ILSP1_UniversalReceiver.sol";
 

@@ -2,8 +2,8 @@
 pragma solidity ^0.6.0;
 
 import "./UniReceiver.sol";
-import "../../node_modules/solidity-bytes-utils/contracts/BytesLib.sol";
-import "../../node_modules/solidity-bytes-utils/contracts/AssertBytes.sol";
+import "solidity-bytes-utils/contracts/BytesLib.sol";
+import "solidity-bytes-utils/contracts/AssertBytes.sol";
 
 contract Checker {
     function callImplementationAndReturn(address target, bytes32 typeId) external returns (bytes32) {

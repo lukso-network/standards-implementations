@@ -1,45 +1,36 @@
 // SPDX-License-Identifier: Apache-2.0
 /*
- * @title ERC725 implementation
+ * @title ERC725Account implementation for LUKSO
  * @author Fabian Vogelsteller <fabian@lukso.network>
  *
- * @dev Implementation of the ERC725 standard + LSP1 universalReceiver + ERC1271 signatureValidation
+ * @dev Implementation of the ERC725Account + LSP1 universalReceiver
  */
 pragma solidity ^0.6.0;
 
 // interfaces
-import "../_ERCs/IERC1271.sol";
 import "../_LSPs/ILSP1_UniversalReceiver.sol";
-import "../../node_modules/@openzeppelin/contracts/introspection/IERC1820Registry.sol";
+import "@openzeppelin/contracts/introspection/IERC1820Registry.sol";
 
 // modules
-import "../_ERCs/ERC725.sol";
-import "../../node_modules/@openzeppelin/contracts/introspection/ERC165.sol";
+import "erc725/contracts/ERC725/ERC725Account.sol";
+import "@openzeppelin/contracts/introspection/ERC165.sol";
 
-// libraries
-import "../../node_modules/@openzeppelin/contracts/cryptography/ECDSA.sol";
-import "../utils/UtilsLib.sol";
-
-contract Account is ERC165, ERC725, IERC1271, ILSP1 {
+contract Account is ERC165, ERC725Account, ILSP1 {
 
     IERC1820Registry private ERC1820 = IERC1820Registry(0x1820a4B7618BdE71Dce8cdc73aAB6C95905faD24);
 
-    // TODO change to universalReceiver?
-    // keccak256("ERC777TokensRecipient")
     bytes32 constant private _TOKENS_RECIPIENT_INTERFACE_HASH =
-    0xb281fc8c12954d22544db45de3159a39272895b169a852b314f9cc762e44c53b;
-
-    bytes4 internal constant _INTERFACE_ID_ERC1271 = 0x1626ba7e;
-    bytes4 internal constant _ERC1271FAILVALUE = 0xffffffff;
+    0x02f4a83ca167ac46c541f87934d1b98de70d2b06ad0aaefae65c5fdda87ae405; // keccak256("LSP1ERC777TokensRecipient")
 
     bytes32[] public storeKeys;
 
-    constructor(address _newOwner) ERC725(_newOwner) public {
+    constructor(address _newOwner) ERC725Account(_newOwner) public {
+
+        // Add the key of the ERC725Type set in the constructor of ERC725Account
+        storeKeys.push(keccak256('ERC725Type'));
 
         // ERC 1820
         ERC1820.setInterfaceImplementer(address(this), _TOKENS_RECIPIENT_INTERFACE_HASH, address(this));
-
-        _registerInterface(_INTERFACE_ID_ERC1271);
     }
 
     /* non-standard public functions */
@@ -50,11 +41,9 @@ contract Account is ERC165, ERC725, IERC1271, ILSP1 {
 
     /* Public functions */
 
-    receive() external payable {}
-
     function setData(bytes32 _key, bytes memory _value)
-    override
     external
+    override
     onlyOwner
     {
         if(store[_key].length == 0) {
@@ -72,50 +61,24 @@ contract Account is ERC165, ERC725, IERC1271, ILSP1 {
     * @param _data The data received
     */
     function universalReceiver(bytes32 _typeId, bytes memory _data)
+    external
     override
     virtual
-    external
     returns (bytes32 returnValue)
     {
-        // TODO CHANGE to sha3(universalReceiver(bytes32,bytes)) ??
-        bytes memory receiverData = getData(0x0000000000000000000000000000000000000000000000000000000000000002);
-
-        // TODO add response as third parameter?
-        emit Received(_typeId, _data);
+        // Get key: keccak256('LSP1UniversalReceiverAddress')
+        bytes memory receiverData = getData(0x8619f233d8fc26a7c358f9fc6d265add217d07469cf233a61fc2da9f9c4a3205);
+        returnValue = 0x0;
 
         // call external contract
         if (receiverData.length == 20) {
             address universalReceiverAddress = BytesLib.toAddress(receiverData, 0);
 
-            return ILSP1(universalReceiverAddress).universalReceiver(_typeId, _data);
+            returnValue = ILSP1(universalReceiverAddress).universalReceiver(_typeId, _data);
         }
 
-        // if no action was taken
-        return 0x0;
-    }
+        emit UniversalReceiver(_msgSender(), _typeId, returnValue, _data);
 
-
-    /**
-    * @notice Checks if an owner signed `_data`.
-    * ERC1271 interface.
-    *
-    * @param _hash hash of the data signed//Arbitrary length data signed on the behalf of address(this)
-    * @param _signature owner's signature(s) of the data
-    */
-    function isValidSignature(bytes32 _hash, bytes memory _signature)
-    override
-    public
-    view
-    returns (bytes4 magicValue)
-    {
-        if (UtilsLib.isContract(owner())){
-            return IERC1271(owner()).isValidSignature(_hash, _signature);
-        } else {
-//            bytes32 signedMessageHash = keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n", _data.length, _data));
-            //abi.encodePacked(byte(0x19), byte(0x0), address(this), _data));
-            return owner() == ECDSA.recover(_hash, _signature)
-                ? _INTERFACE_ID_ERC1271
-                : _ERC1271FAILVALUE;
-        }
+        return returnValue;
     }
 }

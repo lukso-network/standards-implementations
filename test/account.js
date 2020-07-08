@@ -4,8 +4,8 @@ const Account = artifacts.require("Account");
 const KeyManager = artifacts.require("SimpleKeyManager");
 const Checker = artifacts.require("Checker");
 
-// TODO CHNAGE to sha3(universalReceiver(bytes32,bytes)) ??
-const UNIVERSALRECEIVER_KEY = '0x0000000000000000000000000000000000000000000000000000000000000002';
+// Get key: keccak256('LSP1UniversalReceiverAddress')
+const UNIVERSALRECEIVER_KEY = '0x8619f233d8fc26a7c358f9fc6d265add217d07469cf233a61fc2da9f9c4a3205';
 const ERC1271_MAGIC_VALUE = '0x1626ba7e';
 const ERC1271_FAIL_VALUE = '0xffffffff';
 const RANDOM_BYTES32 = "0xb281fc8c12954d22544db45de3159a39272895b169a852b314f9cc762e44c53b";
@@ -146,8 +146,9 @@ contract("Account", accounts => {
 
             assert.equal(await account.getData(key), value);
         });
-        it("storeCount should be 6", async () => {
-            assert.equal(await account.storeCount(), 6);
+        it("storeCount should be 7", async () => {
+            // 7 because the ERC725Type ios already set by the ERC725Account implementation
+            assert.equal(await account.storeCount(), 7);
         });
         it("Update 32 bytes item 6", async () => {
             let key = web3.utils.numberToHex(count);
@@ -156,8 +157,9 @@ contract("Account", accounts => {
 
             assert.equal(await account.getData(key), value);
         });
-        it("storeCount should be 6", async () => {
-            assert.equal(await account.storeCount(), 6);
+        it("storeCount should be 7", async () => {
+            // 7 because the ERC725Type ios already set by the ERC725Account implementation
+            assert.equal(await account.storeCount(), 7);
         });
     });
 
@@ -259,7 +261,7 @@ contract("Account", accounts => {
                 from: owner
             });
 
-            assert.equal(receipt.logs[0].event, 'ContractCreated');
+            assert.equal(receipt.logs[1].event, 'ContractCreated');
         });
 
         it("Allows owner to execute create2", async () => {
@@ -278,13 +280,13 @@ contract("Account", accounts => {
 
             // console.log(receipt.logs[0].args);
 
-            assert.equal(receipt.logs[0].event, 'ContractCreated');
-            assert.equal(receipt.logs[0].args.contractAddress, '0x7ffE4e82BD27654D31f392215b6b145655efe659');
+            assert.equal(receipt.logs[1].event, 'ContractCreated');
+            assert.equal(receipt.logs[1].args.contractAddress, '0x7ffE4e82BD27654D31f392215b6b145655efe659');
         });
     }); //Context interactions
 
     context("Universal Receiver", async () => {
-        it("Call account and check for 'Received' event", async () => {
+        it("Call account and check for 'UniversalReceiver' event", async () => {
             const owner = accounts[2];
             const account = await Account.new(owner, {from: owner});
 
@@ -295,10 +297,18 @@ contract("Account", accounts => {
                 RANDOM_BYTES32
             );
 
-            assert.equal(receipt.receipt.rawLogs[0].topics[0], '0x37b8fee406718a41ca8e50ebc5ebcf3e3c12a1e96399c79fcefa8637b45c3e72');
-            assert.equal(receipt.receipt.rawLogs[0].topics[1], RANDOM_BYTES32);
+            // event should come from account
+            assert.equal(receipt.receipt.rawLogs[0].address, account.address);
+            // event signature
+            assert.equal(receipt.receipt.rawLogs[0].topics[0], '0x54b98940949b5ac0325c889c84db302d4e18faec431b48bdc81706bfe482cfbd');
+            // from
+            assert.equal(receipt.receipt.rawLogs[0].topics[1], web3.utils.leftPad(checker.address.toLowerCase(), 64));
+            // typeId
+            assert.equal(receipt.receipt.rawLogs[0].topics[2], RANDOM_BYTES32);
+            // receivedData
+            assert.equal(receipt.receipt.rawLogs[0].data, '0x00000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000000');
         });
-        it("Call account and check for 'Test1' event", async () => {
+        it("Call account and check for 'UniversalReceiver' event in external account", async () => {
             const owner = accounts[2];
             const account = await Account.new(owner, {from: owner});
             const account2 = await Account.new(owner, {from: owner});
@@ -314,9 +324,15 @@ contract("Account", accounts => {
             );
 
             // event should come from account 2
-            assert.equal(receipt.receipt.rawLogs[1].address, account2.address);
-            assert.equal(receipt.receipt.rawLogs[1].topics[0], '0x37b8fee406718a41ca8e50ebc5ebcf3e3c12a1e96399c79fcefa8637b45c3e72');
-            assert.equal(receipt.receipt.rawLogs[1].topics[1], RANDOM_BYTES32);
+            assert.equal(receipt.receipt.rawLogs[0].address, account2.address);
+            // event signature
+            assert.equal(receipt.receipt.rawLogs[0].topics[0], '0x54b98940949b5ac0325c889c84db302d4e18faec431b48bdc81706bfe482cfbd');
+            // from is the account1, as its redirected from account1
+            assert.equal(receipt.receipt.rawLogs[0].topics[1], web3.utils.leftPad(account.address.toLowerCase(), 64));
+            // typeId
+            assert.equal(receipt.receipt.rawLogs[0].topics[2], RANDOM_BYTES32);
+            // receivedData
+            assert.equal(receipt.receipt.rawLogs[0].data, '0x00000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000000');
         });
     }); //Context Universal Receiver
 
