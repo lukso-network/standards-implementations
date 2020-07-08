@@ -67,6 +67,15 @@ contract("Account", accounts => {
 
             assert.isTrue(result);
         });
+        it("Supports LSP1", async () => {
+            const owner = accounts[2];
+            const account = await Account.new(owner, {from: owner});
+            const interfaceID = '0x6bb56a14';
+
+            const result = await account.supportsInterface.call(interfaceID);
+
+            assert.isTrue(result);
+        });
     });
 
     context("ERC1271", async () => {

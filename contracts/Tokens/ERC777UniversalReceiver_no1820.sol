@@ -4,11 +4,10 @@ pragma solidity ^0.6.0;
 import "../_LSPs/ILSP1_UniversalReceiver.sol";
 
 import "./ERC777.sol";
-import "@openzeppelin/contracts/introspection/IERC1820Registry.sol";
 
 
 /**
- * @dev Implementation of the `IERC777` interface. With the use of the LSP1UniversalReceiver.
+ * @dev Implementation of the `IERC777` interface. WITHOUT the use of ERC1820, but LSP1UniversalReceiver.
  *
  * This implementation is agnostic to the way tokens are created. This means
  * that a supply mechanism has to be added in a derived contract using `_mint`.
@@ -22,9 +21,7 @@ import "@openzeppelin/contracts/introspection/IERC1820Registry.sol";
  * are no special restrictions in the amount of tokens that created, moved, or
  * destroyed. This makes integration with ERC20 applications seamless.
  */
-contract ERC777UniversalReceiver is ERC777 {
-
-    IERC1820Registry private ERC1820 = IERC1820Registry(0x1820a4B7618BdE71Dce8cdc73aAB6C95905faD24);
+contract ERC777UniversalReceiver_no1820 is ERC777 {
 
     bytes32 constant private _TOKENS_SENDER_INTERFACE_HASH =
     0x22e964c6c6533c4e2ffcce1f9d729c317892402b9e59846cf013234330ee9439; // keccak256("LSP1ERC777TokensSender")
@@ -39,10 +36,15 @@ contract ERC777UniversalReceiver is ERC777 {
         string memory name,
         string memory symbol,
         address[] memory defaultOperators
-    ) ERC777(name, symbol, defaultOperators) public {
+    ) public {
+        _name = name;
+        _symbol = symbol;
 
+        _defaultOperatorsArray = defaultOperators;
+        for (uint256 i = 0; i < _defaultOperatorsArray.length; i++) {
+            _defaultOperators[_defaultOperatorsArray[i]] = true;
+        }
     }
-
 
     /**
      * @dev Call from.tokensToSend() if the interface is registered
@@ -59,15 +61,21 @@ contract ERC777UniversalReceiver is ERC777 {
         address to,
         uint256 amount,
         bytes memory userData,
-        bytes memory operatorData
+        bytes memory operatorData,
+        bool requireReceptionAck
     )
-        internal
-        override
+    internal
+    override
     {
-        address implementer = ERC1820.getInterfaceImplementer(from, _TOKENS_SENDER_INTERFACE_HASH);
-        if (implementer != address(0)) {
-            bytes memory data = abi.encodePacked(operator, from, to, amount, userData, operatorData);
-            ILSP1(implementer).universalReceiver(_TOKENS_SENDER_INTERFACE_HASH, data);
+
+        bytes memory data = abi.encodePacked(operator, from, to, amount, userData, operatorData);
+        (bool succ, bytes memory ret) = to.call(abi.encodeWithSignature("universalReceiver(bytes32,bytes)", TOKENS_SENDER_INTERFACE_HASH,data));
+        if(requireReceptionAck && from.isContract()) {
+            bytes32 returnHash;
+            assembly {
+                returnHash := mload(add(ret, 32))
+            }
+            require(succ && returnHash == TOKENS_SENDER_INTERFACE_HASH ,"ERC777: token recipient contract has no implementer for ERC777TokensSender");
         }
     }
 
@@ -91,16 +99,19 @@ contract ERC777UniversalReceiver is ERC777 {
         bytes memory operatorData,
         bool requireReceptionAck
     )
-        internal
-        override
+    internal
+    override
     {
-        address implementer = ERC1820.getInterfaceImplementer(to, _TOKENS_RECIPIENT_INTERFACE_HASH);
-        if (implementer != address(0)) {
-            // Call universal receiver on receiving contract, send supported type: TOKENS_RECIPIENT_INTERFACE_HASH
-            bytes memory data = abi.encodePacked(operator, from, to, amount, userData, operatorData);
-            ILSP1(implementer).universalReceiver(_TOKENS_RECIPIENT_INTERFACE_HASH, data);
-        } else if (requireReceptionAck) {
-//            require(!to.isContract(), "ERC777: token recipient contract has no implementer for ERC777TokensRecipient");
+        bytes memory data = abi.encodePacked(operator, from, to, amount, userData, operatorData);
+
+        (bool succ, bytes memory ret) = to.call(abi.encodeWithSignature("universalReceiver(bytes32,bytes)", TOKENS_RECIPIENT_INTERFACE_HASH,data));
+        bytes32 returnHash;
+        assembly {
+            returnHash := mload(add(ret, 32))
+        }
+        if(requireReceptionAck && to.isContract()) {
+            //require(succ, "ERC777: token recipient contract has no implementer for ERC777TokensRecipient");
+            require(succ && returnHash == TOKENS_RECIPIENT_INTERFACE_HASH, "ERC777: token recipient contract has no implementer for ERC777TokensRecipient");
         }
     }
 }

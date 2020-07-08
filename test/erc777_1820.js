@@ -1,14 +1,22 @@
-const ERC777UniversalReceiver = artifacts.require("ERC777UniversalReceiver");
+const ERC777UniversalReceiver = artifacts.require("ERC777UniversalReceiver_no1820");
 const ReceivingAccount = artifacts.require("Account");
 const ERC777Receiver = artifacts.require("ERC777Receiver");
 
-const {expectRevert, expectEvent} = require("openzeppelin-test-helpers");
+const {expectRevert, singletons} = require("openzeppelin-test-helpers");
+
+// Get key: keccak256('LSP1UniversalReceiverAddress')
+const UNIVERSALRECEIVER_KEY = '0x8619f233d8fc26a7c358f9fc6d265add217d07469cf233a61fc2da9f9c4a3205';
+const TOKEN_RECIPIENT = "0x02f4a83ca167ac46c541f87934d1b98de70d2b06ad0aaefae65c5fdda87ae405"; // keccak256("LSP1ERC777TokensRecipient")
 
 contract("ERC777", accounts => {
+    let erc1820;
+    beforeEach(async function () {
+        erc1820 = await singletons.ERC1820Registry(accounts[1]);
+    });
+
     context("Using Stripped ERC777", async () => {
         const owner = accounts[9];
-        const TOKEN_RECIPIENT =
-            "0x02f4a83ca167ac46c541f87934d1b98de70d2b06ad0aaefae65c5fdda87ae405"; // keccak256("LSP1ERC777TokensRecipient")
+
         let account,
             receiver,
             erc777 = {};
@@ -22,15 +30,13 @@ contract("ERC777", accounts => {
         });
         beforeEach(async () => {
             erc777 = await ERC777UniversalReceiver.new("MyToken", "TKN", [accounts[0]]);
-            account = await ReceivingAccount.new({from: owner});
+            account = await ReceivingAccount.new(owner, {from: owner});
             receiver = await ERC777Receiver.new();
-            await account.changeReceiver(receiver.address, {
+            await account.setData(UNIVERSALRECEIVER_KEY, receiver.address, {
                 from: owner
             });
         });
 
-        it("Deploys correctly", async () => {
-        });
         it("Transfer correctly between regular addresses", async () => {
             const receiver = accounts[1];
             let initBal = await erc777.balanceOf(receiver);

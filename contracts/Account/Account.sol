@@ -17,6 +17,7 @@ import "@openzeppelin/contracts/introspection/ERC165.sol";
 
 contract Account is ERC165, ERC725Account, ILSP1 {
 
+    bytes4 _INTERFACE_ID_LSP1 = 0x6bb56a14;
     IERC1820Registry private ERC1820 = IERC1820Registry(0x1820a4B7618BdE71Dce8cdc73aAB6C95905faD24);
 
     bytes32 constant private _TOKENS_RECIPIENT_INTERFACE_HASH =
@@ -28,6 +29,8 @@ contract Account is ERC165, ERC725Account, ILSP1 {
 
         // Add the key of the ERC725Type set in the constructor of ERC725Account
         storeKeys.push(keccak256('ERC725Type'));
+
+        _registerInterface(_INTERFACE_ID_LSP1);
 
         // ERC 1820
         ERC1820.setInterfaceImplementer(address(this), _TOKENS_RECIPIENT_INTERFACE_HASH, address(this));

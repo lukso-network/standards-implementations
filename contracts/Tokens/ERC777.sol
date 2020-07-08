@@ -34,10 +34,10 @@ contract ERC777 is Context, IERC777, IERC20 {
 
     mapping(address => uint256) private _balances;
 
-    uint256 private _totalSupply;
+    uint256 internal _totalSupply;
 
-    string private _name;
-    string private _symbol;
+    string internal _name;
+    string internal _symbol;
 
     // We inline the result of the following hashes because Solidity doesn't resolve them at compile time.
     // See https://github.com/ethereum/solidity/issues/4024.
@@ -51,10 +51,10 @@ contract ERC777 is Context, IERC777, IERC20 {
         0xb281fc8c12954d22544db45de3159a39272895b169a852b314f9cc762e44c53b;
 
     // This isn't ever read from - it's only used to respond to the defaultOperators query.
-    address[] private _defaultOperatorsArray;
+    address[] internal _defaultOperatorsArray;
 
     // Immutable, but accounts may revoke them (tracked in __revokedDefaultOperators).
-    mapping(address => bool) private _defaultOperators;
+    mapping(address => bool) internal _defaultOperators;
 
     // For each account, a mapping of its operators and revoked default operators.
     mapping(address => mapping(address => bool)) private _operators;
