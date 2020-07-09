@@ -63,26 +63,6 @@ contract ERC777 is Context, IERC777, IERC20 {
     // ERC20-allowances
     mapping (address => mapping (address => uint256)) private _allowances;
 
-    /**
-     * @dev `defaultOperators` may be an empty array.
-     */
-    constructor(
-        string memory name,
-        string memory symbol,
-        address[] memory defaultOperators
-    ) public {
-        _name = name;
-        _symbol = symbol;
-
-        _defaultOperatorsArray = defaultOperators;
-        for (uint256 i = 0; i < _defaultOperatorsArray.length; i++) {
-            _defaultOperators[_defaultOperatorsArray[i]] = true;
-        }
-
-        // register interfaces
-        _ERC1820_REGISTRY.setInterfaceImplementer(address(this), keccak256("ERC777Token"), address(this));
-        _ERC1820_REGISTRY.setInterfaceImplementer(address(this), keccak256("ERC20Token"), address(this));
-    }
 
     /**
      * @dev See {IERC777-name}.

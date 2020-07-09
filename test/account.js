@@ -2,13 +2,15 @@ const {singletons, BN, ether, expectRevert} = require("openzeppelin-test-helpers
 
 const Account = artifacts.require("Account");
 const KeyManager = artifacts.require("SimpleKeyManager");
-const Checker = artifacts.require("Checker");
+const UniversalReciverTester = artifacts.require("UniversalReciverTester");
+const ExternalERC777UniversalReceiverTester = artifacts.require("ExternalERC777UniversalReceiverTester");
 
 // Get key: keccak256('LSP1UniversalReceiverAddress')
 const UNIVERSALRECEIVER_KEY = '0x8619f233d8fc26a7c358f9fc6d265add217d07469cf233a61fc2da9f9c4a3205';
 const ERC1271_MAGIC_VALUE = '0x1626ba7e';
 const ERC1271_FAIL_VALUE = '0xffffffff';
 const RANDOM_BYTES32 = "0xb281fc8c12954d22544db45de3159a39272895b169a852b314f9cc762e44c53b";
+const LSP1_ERC777TokensRecipient = "0x2352f13a810c120f366f70972476f743e16a9f2196b4b60037b84185ecde66d3";
 const DUMMY_PRIVATEKEY = '0xcafecafe7D0F0EBcafeC2D7cafe84cafe3248DDcafe8B80C421CE4C55A26cafe';
 // generate an account
 const DUMMY_SIGNER = web3.eth.accounts.wallet.add(DUMMY_PRIVATEKEY);
@@ -19,7 +21,7 @@ contract("Account", accounts => {
         erc1820 = await singletons.ERC1820Registry(accounts[1]);
     });
 
-    context("Account Deployment", async () => {
+    context("Accounts Deployment", async () => {
         it("Deploys correctly, and compare owners", async () => {
             const owner = accounts[2];
             const account = await Account.new(owner, {from: owner});
@@ -172,7 +174,7 @@ contract("Account", accounts => {
         });
     });
 
-    context("Interactions with Account contracts", async () => {
+    context("Interactions with Accounts contracts", async () => {
         const owner = accounts[3];
         const newOwner = accounts[5];
         let account = {};
@@ -300,7 +302,7 @@ contract("Account", accounts => {
             const account = await Account.new(owner, {from: owner});
 
             // use the checker contract to call account
-            let checker = await Checker.new();
+            let checker = await UniversalReciverTester.new();
             let receipt = await checker.callImplementationAndReturn(
                 account.address,
                 RANDOM_BYTES32
@@ -317,31 +319,47 @@ contract("Account", accounts => {
             // receivedData
             assert.equal(receipt.receipt.rawLogs[0].data, '0x00000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000000');
         });
-        it("Call account and check for 'UniversalReceiver' event in external account", async () => {
+        it("Call account and check for 'ReceivedERC777' event in external account", async () => {
             const owner = accounts[2];
             const account = await Account.new(owner, {from: owner});
-            const account2 = await Account.new(owner, {from: owner});
+            const externalUniversalReceiver = await ExternalERC777UniversalReceiverTester.new({from: owner});
 
             // set account2 as new receiver for account1
-            await account.setData(UNIVERSALRECEIVER_KEY ,account2.address, {from: owner});
+            await account.setData(UNIVERSALRECEIVER_KEY, externalUniversalReceiver.address, {from: owner});
 
             // use the checker contract to call account
-            let checker = await Checker.new();
+            let checker = await UniversalReciverTester.new();
             let receipt = await checker.callImplementationAndReturn(
                 account.address,
-                RANDOM_BYTES32
+                LSP1_ERC777TokensRecipient
             );
 
-            // event should come from account 2
-            assert.equal(receipt.receipt.rawLogs[0].address, account2.address);
-            // event signature
-            assert.equal(receipt.receipt.rawLogs[0].topics[0], '0x54b98940949b5ac0325c889c84db302d4e18faec431b48bdc81706bfe482cfbd');
-            // from is the account1, as its redirected from account1
-            assert.equal(receipt.receipt.rawLogs[0].topics[1], web3.utils.leftPad(account.address.toLowerCase(), 64));
+
+            // event signature "event ReceivedERC777(address indexed token, address indexed _operator, address indexed _from, address _to, uint256 _amount)"
+            // event should come from account externalUniversalReceiver
+            assert.equal(receipt.receipt.rawLogs[0].address, externalUniversalReceiver.address);
+            // signature
+            assert.equal(receipt.receipt.rawLogs[0].topics[0], '0xdc38539587ea4d67f9f649ad9269646bab26927bad175bdcdfdab5dd297d5e1c');
+            // "token" is the checker
+            assert.equal(receipt.receipt.rawLogs[0].topics[1], web3.utils.leftPad(checker.address.toLowerCase(), 64));
             // typeId
-            assert.equal(receipt.receipt.rawLogs[0].topics[2], RANDOM_BYTES32);
+            // not present, as it would revert if not correct
             // receivedData
-            assert.equal(receipt.receipt.rawLogs[0].data, '0x00000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000000');
+            assert.equal(receipt.receipt.rawLogs[0].data, '0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000');
+
+
+            // event signature "event UniversalReceiver(address indexed from, bytes32 indexed typeId, bytes32 indexed returnedValue, bytes receivedData)"
+            // event should come from account account
+            assert.equal(receipt.receipt.rawLogs[1].address, account.address);
+            // signature
+            assert.equal(receipt.receipt.rawLogs[1].topics[0], '0x54b98940949b5ac0325c889c84db302d4e18faec431b48bdc81706bfe482cfbd');
+            // "from" is the checker
+            assert.equal(receipt.receipt.rawLogs[1].topics[1], web3.utils.leftPad(checker.address.toLowerCase(), 64));
+            // typeId
+            assert.equal(receipt.receipt.rawLogs[1].topics[2], LSP1_ERC777TokensRecipient);
+            // receivedData
+            assert.equal(receipt.receipt.rawLogs[1].data, '0x00000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000000');
+
         });
     }); //Context Universal Receiver
 
@@ -356,7 +374,7 @@ contract("Account", accounts => {
             await account.transferOwnership(manager.address, {from: owner});
         });
 
-        it("Account should have owner as manager", async () => {
+        it("Accounts should have owner as manager", async () => {
             const idOwner = await account.owner.call();
             assert.equal(idOwner, manager.address, "Addresses should match");
         });
@@ -401,7 +419,7 @@ contract("Account", accounts => {
             const amount = ether("10");
             const OPERATION_CALL = 0x0;
 
-            //Fund Account contract
+            //Fund Accounts contract
             await web3.eth.sendTransaction({
                 from: owner,
                 to: account.address,
@@ -435,7 +453,7 @@ contract("Account", accounts => {
 
             assert.isTrue(
                 new BN(idBalance).sub(amount).eq(new BN(idBalanceFinal)),
-                "Account should have spent amount"
+                "Accounts should have spent amount"
             );
         });
     }); //Context key manager
