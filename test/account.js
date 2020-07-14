@@ -7,6 +7,8 @@ const ExternalERC777UniversalReceiverTester = artifacts.require("ExternalERC777U
 
 // Get key: keccak256('LSP1UniversalReceiverAddress')
 const UNIVERSALRECEIVER_KEY = '0x8619f233d8fc26a7c358f9fc6d265add217d07469cf233a61fc2da9f9c4a3205';
+// keccak256("EXECUTOR_ROLE")
+const EXECUTOR_ROLE = "0xd8aa0f3194971a2a116679f7c2090f6939c8d4e01a2a8d7e41d55e5351469e63";
 const ERC1271_MAGIC_VALUE = '0x1626ba7e';
 const ERC1271_FAIL_VALUE = '0xffffffff';
 const RANDOM_BYTES32 = "0xb281fc8c12954d22544db45de3159a39272895b169a852b314f9cc762e44c53b";
@@ -157,9 +159,9 @@ contract("Account", accounts => {
 
             assert.equal(await account.getData(key), value);
         });
-        it("storeCount should be 7", async () => {
+        it("dataCount should be 7", async () => {
             // 7 because the ERC725Type ios already set by the ERC725Account implementation
-            assert.equal(await account.storeCount(), 7);
+            assert.equal(await account.dataCount(), 7);
         });
         it("Update 32 bytes item 6", async () => {
             let key = web3.utils.numberToHex(count);
@@ -168,9 +170,9 @@ contract("Account", accounts => {
 
             assert.equal(await account.getData(key), value);
         });
-        it("storeCount should be 7", async () => {
+        it("dataCount should be 7", async () => {
             // 7 because the ERC725Type ios already set by the ERC725Account implementation
-            assert.equal(await account.storeCount(), 7);
+            assert.equal(await account.dataCount(), 7);
         });
     });
 
@@ -384,8 +386,8 @@ contract("Account", accounts => {
                 const dataToSign = '0xcafecafe';
                 const signature = DUMMY_SIGNER.sign(dataToSign);
 
-                // add new owner to keymanager
-                await manager.addExecutor(DUMMY_SIGNER.address, true, {from: owner});
+                // add new owner to keyManager
+                await manager.grantRole(EXECUTOR_ROLE, DUMMY_SIGNER.address, {from: owner});
 
                 const result = await account.isValidSignature.call(signature.messageHash, signature.signature);
 

@@ -30,7 +30,7 @@ contract("Registries", accounts => {
         universal165Query = await Universal165Query.new();
     });
 
-    it("Gas comparisson between querying with ERC165 vs Universal165", async () => {
+    it("Gas comparison between querying with ERC165 vs Universal165", async () => {
         let tx1 = await erc156Query.doesContractImplementInterface(
             erc156.address,
             accountInterface

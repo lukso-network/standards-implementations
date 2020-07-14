@@ -39,7 +39,6 @@ contract ExternalERC777UniversalReceiverTester {
             _from := mload(add(add(_bytes, 0x14), 0x14))
             _to := mload(add(add(_bytes, 0x28), 0x28))
             _amount := mload(add(add(_bytes, 0x20), 0x42))
-
         }
     }
 }

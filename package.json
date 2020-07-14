@@ -23,9 +23,9 @@
   "dependencies": {
     "@openzeppelin/contracts": "^3.1.0",
     "@openzeppelin/contracts-ethereum-package": "^3.0.0",
-    "erc725": "^1.0.0-beta.5",
+    "erc725": "^1.0.0-beta.8",
     "solidity-bytes-utils": "0.0.8",
-    "truffle": "^5.1.31"
+    "truffle": "^5.1.34"
   },
   "devDependencies": {
     "@openzeppelin/cli": "^2.8.2",

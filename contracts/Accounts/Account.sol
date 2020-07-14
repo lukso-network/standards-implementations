@@ -28,22 +28,22 @@ contract Account is ERC165, ERC725Account, ILSP1 {
     bytes32 constant private _UNIVERSALRECEIVER_KEY =
     0x8619f233d8fc26a7c358f9fc6d265add217d07469cf233a61fc2da9f9c4a3205; // keccak256("LSP1UniversalReceiverAddress")
 
-    bytes32[] public storeKeys;
+    bytes32[] public dataKeys;
 
 
 
     constructor(address _newOwner) ERC725Account(_newOwner) public {
 
         // Add the key of the ERC725Type set in the constructor of ERC725Account
-        storeKeys.push(keccak256('ERC725Type'));
+        dataKeys.push(keccak256('ERC725Type'));
 
         _registerInterface(_INTERFACE_ID_LSP1);
     }
 
     /* non-standard public functions */
 
-    function storeCount() public view returns (uint256) {
-        return storeKeys.length;
+    function dataCount() public view returns (uint256) {
+        return dataKeys.length;
     }
 
     /* Public functions */
@@ -54,7 +54,7 @@ contract Account is ERC165, ERC725Account, ILSP1 {
     onlyOwner
     {
         if(store[_key].length == 0) {
-            storeKeys.push(_key); // 30k more gas on initial set
+            dataKeys.push(_key); // 30k more gas on initial set
         }
         store[_key] = _value;
         emit DataChanged(_key, _value);
