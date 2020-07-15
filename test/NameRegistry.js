@@ -39,7 +39,7 @@ contract("NameRegistry", async (accounts) => {
         );
     });
 
-    it('should give the right count', async function() {
+    it('should give the right length', async function() {
         assert.equal(await nameRegistry.length(), '1');
 
         // add new entry
@@ -73,7 +73,7 @@ contract("NameRegistry", async (accounts) => {
         assert.isFalse(await nameRegistry.containsAddress(accounts[2]));
     });
 
-    it('can list alla values of the registry', async function() {
+    it('can list all values of the registry', async function() {
         let length = await nameRegistry.length();
         let values = [];
 
