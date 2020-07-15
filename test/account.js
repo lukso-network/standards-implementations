@@ -5,6 +5,10 @@ const KeyManager = artifacts.require("SimpleKeyManager");
 const UniversalReciverTester = artifacts.require("UniversalReciverTester");
 const ExternalERC777UniversalReceiverTester = artifacts.require("ExternalERC777UniversalReceiverTester");
 
+// Get key: keccak256('ERC725Type')
+const ERC725Type_KEY = '0xee97c7dd2e734cf234c2ba0d83a74633e1ac7fc8a9fd779f8497a0109c71b993';
+// Get key: keccak256('ERC725Account')
+const ERC725Account_VALUE = '0xafdeb5d6e788fe0ba73c9eb2e30b8a4485e3a18fb31dd13e3b362f62a65c67a0';
 // Get key: keccak256('LSP1UniversalReceiverAddress')
 const UNIVERSALRECEIVER_KEY = '0x8619f233d8fc26a7c358f9fc6d265add217d07469cf233a61fc2da9f9c4a3205';
 // keccak256("EXECUTOR_ROLE")
@@ -79,6 +83,12 @@ contract("Account", accounts => {
             const result = await account.supportsInterface.call(interfaceID);
 
             assert.isTrue(result);
+        });
+
+        it("Has ERC725Type set to ERC725Account", async () => {
+            const owner = accounts[2];
+            const account = await Account.new(owner, {from: owner});
+            assert.equal(await account.getData(ERC725Type_KEY), ERC725Account_VALUE);
         });
     });
 

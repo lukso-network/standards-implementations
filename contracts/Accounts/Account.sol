@@ -34,7 +34,7 @@ contract Account is ERC165, ERC725Account, ILSP1 {
 
     constructor(address _newOwner) ERC725Account(_newOwner) public {
 
-        // Add the key of the ERC725Type set in the constructor of ERC725Account
+        // Add the key of the ERC725Type set in the constructor of ERC725Account.sol
         dataKeys.push(keccak256('ERC725Type'));
 
         _registerInterface(_INTERFACE_ID_LSP1);
