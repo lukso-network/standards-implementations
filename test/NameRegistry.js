@@ -50,8 +50,8 @@ contract("NameRegistry", async (accounts) => {
 
 
     it('should give the right values at indexes', async function() {
-        let getIndex0 = await nameRegistry.atIndex(0);
-        let getIndex1 = await nameRegistry.atIndex(1);
+        let getIndex0 = await nameRegistry.valueAtIndex(0);
+        let getIndex1 = await nameRegistry.valueAtIndex(1);
 
         assert.equal(getIndex0.setter, accounts[1]);
         assert.equal(getIndex0.name, name2);
@@ -71,6 +71,30 @@ contract("NameRegistry", async (accounts) => {
         assert.isTrue(await nameRegistry.containsAddress(accounts[1]));
         assert.isTrue(await nameRegistry.containsAddress(accounts[3]));
         assert.isFalse(await nameRegistry.containsAddress(accounts[2]));
+    });
+
+    it('can list alla values of the registry', async function() {
+        let length = await nameRegistry.length();
+        let values = [];
+
+        for(let i = 0; i < length; i++) {
+            values.push(await nameRegistry.valueAtIndex(i));
+        }
+
+        assert.deepEqual(values, [
+            {
+              0: accounts[1],
+              1: name2,
+              name: name2,
+              setter: accounts[1]
+            },
+            {
+              0: accounts[3],
+              1: name3,
+              name: name3,
+              setter: accounts[3]
+            }
+        ]);
     });
 
 });

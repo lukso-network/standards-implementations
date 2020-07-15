@@ -82,7 +82,7 @@ contract NameRegistry {
     }
 
 
-    function atIndex(uint256 _index)
+    function valueAtIndex(uint256 _index)
     public
     view
     returns (address setter, bytes memory name)
