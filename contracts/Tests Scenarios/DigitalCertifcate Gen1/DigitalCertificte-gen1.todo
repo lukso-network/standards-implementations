@@ -2,7 +2,7 @@
 pragma solidity ^0.6.0;
 
 //import "https://github.com/lukso-network/standards-scenarios/blob/digital-certificates/contracts/DigitialCertificate/DigitalCertificate-fungible.sol";
-import "../../DigitialCertificate/DigitalCertificate-fungible._sol";
+import "../../DigitialCertificate/DigitalCertificate-fungible.sol";
 
 contract DCGen1 is DigitalCertificate {
 
