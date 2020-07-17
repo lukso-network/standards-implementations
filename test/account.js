@@ -438,12 +438,14 @@ contract("Account", accounts => {
                 value: amount
             });
 
-            // Intial Balances
+            // Initial Balances
             const destBalance = await web3.eth.getBalance(dest);
             const idBalance = await web3.eth.getBalance(account.address);
             const managerBalance = await web3.eth.getBalance(manager.address);
 
-            await manager.execute(OPERATION_CALL, dest, amount, "0x0", {
+            let abi = account.contract.methods.execute(OPERATION_CALL, dest, amount.toString(), "0x00").encodeABI();
+
+            await manager.execute(abi, {
                 from: owner
             });
 

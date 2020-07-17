@@ -27,7 +27,7 @@ contract SimpleKeyManager is ERC165, IERC1271, AccessControl {
     mapping (address => uint256) private _nonceStore;
 
     // EVENTS
-    event Executed(uint256 indexed _operation, address indexed _to, uint256 indexed  _value, bytes _data);
+    event Executed(uint256 indexed  _value, bytes _data);
 
     constructor(address _account, address _newOwner)
     public
@@ -36,7 +36,7 @@ contract SimpleKeyManager is ERC165, IERC1271, AccessControl {
         _setupRole(DEFAULT_ADMIN_ROLE, _newOwner);
         _setupRole(EXECUTOR_ROLE, _newOwner);
 
-        // allow self execution
+        // allow execution itself
         _setupRole(EXECUTOR_ROLE, _account);
 
         // Link account
@@ -54,32 +54,30 @@ contract SimpleKeyManager is ERC165, IERC1271, AccessControl {
     }
 
 
-    function execute(uint256 _operationType, address _to, uint256 _value, bytes memory _data)
+    function execute(bytes memory _data)
     external
     payable
     {
         require(hasRole(EXECUTOR_ROLE, _msgSender()), 'Only executors are allowed');
 
-        Account.execute(_operationType, _to, _value, _data);
-        emit Executed(_operationType, _to, _value, _data);
+        address(Account).call{value: msg.value, gas: gasleft()}(_data); //(success, ) =
+        emit Executed(msg.value, _data);
     }
 
 
     // allows anybody to execute given they have a signed messaged from an executor
     function executeRelayedCall(
-        uint256 _operationType,
-        address _to,
-        uint256 _value,
+        address signedFor,
         bytes memory _data,
         uint256 _nonce,
         bytes memory _signature
     )
     external
     {
+        require(signedFor == address(this), 'Message not signed for this keyManager');
+
         bytes memory blob = abi.encodePacked(
-            _operationType,
-            _to,
-            _value,
+            address(this), // needs to be signed for this keyManager
             _data,
             _nonce // Prevents replays
         );
@@ -93,8 +91,8 @@ contract SimpleKeyManager is ERC165, IERC1271, AccessControl {
         // increase the nonce
         _nonceStore[from] = _nonceStore[from].add(1);
 
-        Account.execute(_operationType, _to, _value, _data);
-        emit Executed(_operationType, _to, _value, _data);
+        address(Account).call{value: 0, gas: gasleft()}(_data); //(success, ) =
+        emit Executed(0, _data);
     }
 
     /**
