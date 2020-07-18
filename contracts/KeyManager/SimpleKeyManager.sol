@@ -37,6 +37,7 @@ contract SimpleKeyManager is ERC165, IERC1271, AccessControl {
         _setupRole(EXECUTOR_ROLE, _newOwner);
 
         // allow execution itself
+        _setupRole(DEFAULT_ADMIN_ROLE, _account); // TODO only for UniversalProfile BETA
         _setupRole(EXECUTOR_ROLE, _account);
 
         // Link account
