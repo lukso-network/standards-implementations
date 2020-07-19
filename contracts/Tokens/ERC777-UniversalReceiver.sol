@@ -29,11 +29,11 @@ contract ERC777UniversalReceiver is ERC777 {
 
     bytes4 private constant _INTERFACE_ID_LSP1 = 0x6bb56a14;
 
-    bytes32 constant private _TOKENS_SENDER_INTERFACE_HASH =
-    0x3d74c01657c02cd6933da4fcd70aadab403f3b222e30c05b3536cb11fb083e15; // keccak256("LSP1_ERC777TokensSender")
+    bytes32 constant internal _TOKENS_SENDER_INTERFACE_HASH =
+    0x29ddb589b1fb5fc7cf394961c1adf5f8c6454761adf795e67fe149f658abe895; // keccak256("ERC777TokensSender")
 
-    bytes32 constant private _TOKENS_RECIPIENT_INTERFACE_HASH =
-    0x2352f13a810c120f366f70972476f743e16a9f2196b4b60037b84185ecde66d3; // keccak256("LSP1_ERC777TokensRecipient")
+    bytes32 constant internal _TOKENS_RECIPIENT_INTERFACE_HASH =
+    0xb281fc8c12954d22544db45de3159a39272895b169a852b314f9cc762e44c53b; // keccak256("ERC777TokensRecipient")
 
     /**
      * @dev `defaultOperators` may be an empty array.

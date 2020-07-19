@@ -4,18 +4,19 @@ pragma solidity ^0.6.0;
 
 contract ExternalERC777UniversalReceiverTester {
 
-    bytes32 constant private _TOKENS_SENDER_INTERFACE_HASH =
-    0x3d74c01657c02cd6933da4fcd70aadab403f3b222e30c05b3536cb11fb083e15; // keccak256("LSP1_ERC777TokensSender")
+    bytes32 constant internal _TOKENS_SENDER_INTERFACE_HASH =
+    0x29ddb589b1fb5fc7cf394961c1adf5f8c6454761adf795e67fe149f658abe895; // keccak256("ERC777TokensSender")
 
-    bytes32 constant private TOKENS_RECIPIENT_INTERFACE_HASH =
-    0x2352f13a810c120f366f70972476f743e16a9f2196b4b60037b84185ecde66d3; // keccak256("LSP1_ERC777TokensRecipient")
+    bytes32 constant internal _TOKENS_RECIPIENT_INTERFACE_HASH =
+    0xb281fc8c12954d22544db45de3159a39272895b169a852b314f9cc762e44c53b; // keccak256("ERC777TokensRecipient")
+
 
 
     event ReceivedERC777(address indexed token, address indexed _operator, address indexed _from, address _to, uint256 _amount);
 
     function universalReceiverDelegate(address sender, bytes32 typeId, bytes memory data) external returns(bytes32){
 
-        if(typeId == TOKENS_RECIPIENT_INTERFACE_HASH) {
+        if(typeId == _TOKENS_RECIPIENT_INTERFACE_HASH) {
             (address _operator, address _from, address _to, uint256 _amount) = toERC777Data(data);
 
             emit ReceivedERC777(sender, _operator, _from, _to, _amount);

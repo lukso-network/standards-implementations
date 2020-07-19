@@ -1,34 +1,21 @@
-// SPDX-License-Identifier: CC0-1.0
-pragma solidity 0.6.10;
+// SPDX-License-Identifier: Apache-2.0
+pragma solidity ^0.6.0;
 
 import "../_LSPs/ILSP1_UniversalReceiver.sol";
 
 contract BasicUniversalReceiver is ILSP1 {
 
-    event TokenReceived(address tokenContract, address from, address to, uint256 amount);
-    bytes32 constant internal TOKEN_RECEIVE = keccak256("TOKEN_RECEIVE");
+    bytes32 constant internal _TOKENS_SENDER_INTERFACE_HASH =
+    0x29ddb589b1fb5fc7cf394961c1adf5f8c6454761adf795e67fe149f658abe895; // keccak256("ERC777TokensSender")
 
-    function toTokenData(bytes memory _bytes) internal pure returns(address _from, address _to, uint256 _amount) {
-        require(_bytes.length == 72, "data has wrong size");
-        assembly {
-            _from := mload(add(add(_bytes, 0x14), 0x0))
-            _to := mload(add(add(_bytes, 0x14), 0x14))
-            _amount := mload(add(add(_bytes, 0x20), 0x28))
-        }
-    }
+    bytes32 constant internal _TOKENS_RECIPIENT_INTERFACE_HASH =
+    0xb281fc8c12954d22544db45de3159a39272895b169a852b314f9cc762e44c53b; // keccak256("ERC777TokensRecipient")
 
-    function universalReceiver(bytes32 typeId, bytes calldata data)
-    external
-    override
-    returns (bytes32)
-    {
-        if(typeId == TOKEN_RECEIVE){
-            (address from, address to, uint256 amount) = toTokenData(data);
-            emit TokenReceived(msg.sender, from, to, amount);
-        }
+    function universalReceiver(bytes32 typeId, bytes memory data) external override returns (bytes32 returnValue){
+        require(typeId == _TOKENS_RECIPIENT_INTERFACE_HASH || typeId == _TOKENS_SENDER_INTERFACE_HASH);
 
-        emit UniversalReceiver(msg.sender, typeId, 0x0, data);
+        emit UniversalReceiver(msg.sender, typeId, typeId, data);
 
-        return 0x0;
+        return typeId;
     }
 }

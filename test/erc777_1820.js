@@ -8,8 +8,9 @@ const {expectRevert, singletons} = require("openzeppelin-test-helpers");
 
 // Get key: keccak256('LSP1UniversalReceiverAddress')
 const UNIVERSALRECEIVER_KEY = '0x8619f233d8fc26a7c358f9fc6d265add217d07469cf233a61fc2da9f9c4a3205';
-const TOKENS_RECIPIENT_INTERFACE_HASH = "0x2352f13a810c120f366f70972476f743e16a9f2196b4b60037b84185ecde66d3"; // keccak256("LSP1_ERC777TokensRecipient")
+const TOKENS_RECIPIENT_INTERFACE_HASH = "0xb281fc8c12954d22544db45de3159a39272895b169a852b314f9cc762e44c53b"; // keccak256("ERC777TokensRecipient")
 const OPERATION_CALL = 0;
+
 
 contract("ERC777", accounts => {
     let erc1820;

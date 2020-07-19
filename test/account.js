@@ -16,10 +16,11 @@ const EXECUTOR_ROLE = "0xd8aa0f3194971a2a116679f7c2090f6939c8d4e01a2a8d7e41d55e5
 const ERC1271_MAGIC_VALUE = '0x1626ba7e';
 const ERC1271_FAIL_VALUE = '0xffffffff';
 const RANDOM_BYTES32 = "0xb281fc8c12954d22544db45de3159a39272895b169a852b314f9cc762e44c53b";
-const LSP1_ERC777TokensRecipient = "0x2352f13a810c120f366f70972476f743e16a9f2196b4b60037b84185ecde66d3";
+const ERC777TokensRecipient = "0xb281fc8c12954d22544db45de3159a39272895b169a852b314f9cc762e44c53b";
 const DUMMY_PRIVATEKEY = '0xcafecafe7D0F0EBcafeC2D7cafe84cafe3248DDcafe8B80C421CE4C55A26cafe';
 // generate an account
 const DUMMY_SIGNER = web3.eth.accounts.wallet.add(DUMMY_PRIVATEKEY);
+
 
 contract("Account", accounts => {
     let erc1820;
@@ -183,6 +184,11 @@ contract("Account", accounts => {
         it("dataCount should be 7", async () => {
             // 7 because the ERC725Type ios already set by the ERC725Account implementation
             assert.equal(await account.dataCount(), 7);
+
+            let keys = await account.allDataKeys();
+            assert.equal(keys.length, 7);
+
+            console.log('Stored keys', keys);
         });
     });
 
@@ -343,7 +349,7 @@ contract("Account", accounts => {
             let checker = await UniversalReciverTester.new();
             let receipt = await checker.callImplementationAndReturn(
                 account.address,
-                LSP1_ERC777TokensRecipient
+                ERC777TokensRecipient
             );
 
 
@@ -368,7 +374,7 @@ contract("Account", accounts => {
             // "from" is the checker
             assert.equal(receipt.receipt.rawLogs[1].topics[1], web3.utils.leftPad(checker.address.toLowerCase(), 64));
             // typeId
-            assert.equal(receipt.receipt.rawLogs[1].topics[2], LSP1_ERC777TokensRecipient);
+            assert.equal(receipt.receipt.rawLogs[1].topics[2], ERC777TokensRecipient);
             // receivedData
             assert.equal(receipt.receipt.rawLogs[1].data, '0x00000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000000');
 

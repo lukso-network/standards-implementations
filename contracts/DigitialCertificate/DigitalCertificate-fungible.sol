@@ -29,6 +29,10 @@ abstract contract DigitalCertificate is ERC725Y, ERC777UniversalReceiver {
         return dataKeys.length;
     }
 
+    function allDataKeys() public view returns (bytes32[] memory) {
+        return dataKeys;
+    }
+
     /* Public functions */
 
     function setData(bytes32 _key, bytes memory _value)

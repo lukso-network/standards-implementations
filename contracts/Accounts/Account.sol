@@ -46,6 +46,10 @@ contract Account is ERC165, ERC725Account, ILSP1 {
         return dataKeys.length;
     }
 
+    function allDataKeys() public view returns (bytes32[] memory) {
+        return dataKeys;
+    }
+
     /* Public functions */
 
     function setData(bytes32 _key, bytes memory _value)

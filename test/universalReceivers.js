@@ -1,8 +1,11 @@
-const UniReceiver = artifacts.require("UniversalReceiverExample");
+const UniReceiver = artifacts.require("BasicUniversalReceiver");
 const UniversalReciverTester = artifacts.require("UniversalReciverTester");
 // const ExternalReceiver = artifacts.require("ExternalReceiver");
 // const DelegateReceiver = artifacts.require("DelegateReceiver");
 // const BasicBareReceiver = artifacts.require("BasicBareReceiver");
+
+const TOKENS_RECIPIENT_INTERFACE_HASH = "0xb281fc8c12954d22544db45de3159a39272895b169a852b314f9cc762e44c53b";
+
 
 const {
     BN,
@@ -13,7 +16,6 @@ const {
 
 contract("Receivers", accounts => {
     let uni = {};
-    const TOKENS_RECIPIENT_INTERFACE_HASH = "0x2352f13a810c120f366f70972476f743e16a9f2196b4b60037b84185ecde66d3";
 
     beforeEach(async () => {
         uni = await UniReceiver.new();
