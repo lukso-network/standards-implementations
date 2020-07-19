@@ -26,6 +26,17 @@ contract("AddressRegistry", async (accounts) => {
         assert.equal(await addressRegistry.getAddress(0), accounts[1]);
     });
 
+    it('add and remove address', async function() {
+
+        await addressRegistry.addAddress(accounts[4]);
+
+        assert.isTrue(await addressRegistry.containsAddress(accounts[4]));
+
+        await addressRegistry.removeAddress(accounts[4]);
+
+        assert.isFalse(await addressRegistry.containsAddress(accounts[4]));
+    });
+
     it('should give the right count', async function() {
         assert.equal(await addressRegistry.length(), '1');
 
@@ -33,6 +44,16 @@ contract("AddressRegistry", async (accounts) => {
         await addressRegistry.addAddress(accounts[2]);
 
         assert.equal(await addressRegistry.length(), '2');
+    });
+
+    it('get correct index', async function() {
+        assert.equal(await addressRegistry.getIndex(accounts[1]), '0');
+        assert.equal(await addressRegistry.getIndex(accounts[2]), '1');
+
+        expectRevert(
+            addressRegistry.getIndex(accounts[4]),
+            "EnumerableSet: Index not found"
+        );
     });
 
 
@@ -47,6 +68,13 @@ contract("AddressRegistry", async (accounts) => {
         assert.deepEqual(values, [
             accounts[1],
             accounts[2]
+        ]);
+    });
+
+    it('can get all raw values in one call', async function() {
+        assert.deepEqual(await addressRegistry.getAllRawValues(), [
+            '0x000000000000000000000000' + accounts[1].replace('0x','').toLowerCase(),
+            '0x000000000000000000000000' + accounts[2].replace('0x','').toLowerCase()
         ]);
     });
 
