@@ -6,8 +6,8 @@ const ExternalERC777UniversalReceiverRejectTester = artifacts.require("ExternalE
 
 const {expectRevert, singletons} = require("openzeppelin-test-helpers");
 
-// Get key: keccak256('LSP1UniversalReceiverAddress')
-const UNIVERSALRECEIVER_KEY = '0x8619f233d8fc26a7c358f9fc6d265add217d07469cf233a61fc2da9f9c4a3205';
+// Get key: keccak256('LSP1UniversalReceiverDelegate')
+const UNIVERSALRECEIVER_KEY = '0x0cfc51aec37c55a4d0b1a65c6255c4bf2fbdf6277f3cc0730c45b828b6db8b47';
 const TOKENS_RECIPIENT_INTERFACE_HASH = "0xb281fc8c12954d22544db45de3159a39272895b169a852b314f9cc762e44c53b"; // keccak256("ERC777TokensRecipient")
 const OPERATION_CALL = 0;
 

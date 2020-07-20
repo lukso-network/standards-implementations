@@ -23,8 +23,8 @@ contract Account is ERC165, ERC725Account, ILSP1 {
     bytes32 constant private _TOKENS_RECIPIENT_INTERFACE_HASH =
     0x2352f13a810c120f366f70972476f743e16a9f2196b4b60037b84185ecde66d3; // keccak256("LSP1_ERC777TokensRecipient")
 
-    bytes32 constant private _UNIVERSALRECEIVER_KEY =
-    0x8619f233d8fc26a7c358f9fc6d265add217d07469cf233a61fc2da9f9c4a3205; // keccak256("LSP1UniversalReceiverAddress")
+    bytes32 constant private _UNIVERSAL_RECEIVER_DELEGATE_KEY =
+    0x0cfc51aec37c55a4d0b1a65c6255c4bf2fbdf6277f3cc0730c45b828b6db8b47; // keccak256("LSP1UniversalReceiverDelegate")
 
     bytes32[] public dataKeys;
 
@@ -75,7 +75,7 @@ contract Account is ERC165, ERC725Account, ILSP1 {
     virtual
     returns (bytes32 returnValue)
     {
-        bytes memory receiverData = getData(_UNIVERSALRECEIVER_KEY);
+        bytes memory receiverData = getData(_UNIVERSAL_RECEIVER_DELEGATE_KEY);
         returnValue = "";
 
         // call external contract

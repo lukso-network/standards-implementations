@@ -9,8 +9,8 @@ const ExternalERC777UniversalReceiverTester = artifacts.require("ExternalERC777U
 const ERC725Type_KEY = '0xee97c7dd2e734cf234c2ba0d83a74633e1ac7fc8a9fd779f8497a0109c71b993';
 // Get key: keccak256('ERC725Account')
 const ERC725Account_VALUE = '0xafdeb5d6e788fe0ba73c9eb2e30b8a4485e3a18fb31dd13e3b362f62a65c67a0';
-// Get key: keccak256('LSP1UniversalReceiverAddress')
-const UNIVERSALRECEIVER_KEY = '0x8619f233d8fc26a7c358f9fc6d265add217d07469cf233a61fc2da9f9c4a3205';
+// Get key: keccak256('LSP1UniversalReceiverDelegate')
+const UNIVERSALRECEIVER_KEY = '0x0cfc51aec37c55a4d0b1a65c6255c4bf2fbdf6277f3cc0730c45b828b6db8b47';
 // keccak256("EXECUTOR_ROLE")
 const EXECUTOR_ROLE = "0xd8aa0f3194971a2a116679f7c2090f6939c8d4e01a2a8d7e41d55e5351469e63";
 const ERC1271_MAGIC_VALUE = '0x1626ba7e';

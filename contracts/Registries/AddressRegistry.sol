@@ -4,16 +4,18 @@ pragma solidity ^0.6.0;
 
 // libraries
 import "@openzeppelin/contracts/utils/EnumerableSet.sol";
+import "@openzeppelin/contracts/introspection/ERC165.sol";
 
 
-contract AddressRegistry {
+contract AddressRegistry is ERC165 {
     using EnumerableSet for EnumerableSet.AddressSet;
 
-    EnumerableSet.AddressSet private addressSet;
+    EnumerableSet.AddressSet internal addressSet;
 
 
     function addAddress(address _address)
     public
+    virtual
     returns(bool)
     {
         return addressSet.add(_address);
@@ -21,6 +23,7 @@ contract AddressRegistry {
 
     function removeAddress(address _address)
     public
+    virtual
     returns(bool)
     {
         return addressSet.remove(_address);
