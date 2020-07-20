@@ -1,5 +1,5 @@
 const UniReceiver = artifacts.require("BasicUniversalReceiver");
-const UniversalReciverTester = artifacts.require("UniversalReciverTester");
+const UniversalReceiverTester = artifacts.require("UniversalReceiverTester");
 // const ExternalReceiver = artifacts.require("ExternalReceiver");
 // const DelegateReceiver = artifacts.require("DelegateReceiver");
 // const BasicBareReceiver = artifacts.require("BasicBareReceiver");
@@ -42,7 +42,7 @@ contract("Receivers", accounts => {
     // });
 
     it("Contract can check for implementing interface with Bytes32", async () => {
-        let checker = await UniversalReciverTester.new();
+        let checker = await UniversalReceiverTester.new();
         let tx = await checker.checkImplementation(uni.address, TOKENS_RECIPIENT_INTERFACE_HASH);
         console.log(
             "Contract checking for implementing interface using bytes32 costs: ",
@@ -56,7 +56,7 @@ contract("Receivers", accounts => {
     });
 
     it("Contract can check for implementing interface with Low Level call", async () => {
-        let checker = await UniversalReciverTester.new();
+        let checker = await UniversalReceiverTester.new();
         let tx = await checker.lowLevelCheckImplementation(
             uni.address,
             TOKENS_RECIPIENT_INTERFACE_HASH
@@ -73,7 +73,7 @@ contract("Receivers", accounts => {
     });
 
     // it("Contract can check for implementing interface with Bytes", async () => {
-    //     let checker = await UniversalReciverTester.new();
+    //     let checker = await UniversalReceiverTester.new();
     //     let tx = await checker.checkImplementationBytes(
     //         uni.address,
     //         TOKENS_RECIPIENT_INTERFACE_HASH
@@ -90,7 +90,7 @@ contract("Receivers", accounts => {
     // });
 
     // it("Contract can check for implementing interface with Low Level cal + Bytes", async () => {
-    //     let checker = await UniversalReciverTester.new();
+    //     let checker = await UniversalReceiverTester.new();
     //     let tx = await checker.lowLevelCheckImplementationBytes(
     //         uni.address,
     //         TOKENS_RECIPIENT_INTERFACE_HASH

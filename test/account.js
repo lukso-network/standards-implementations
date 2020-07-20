@@ -2,7 +2,7 @@ const {singletons, BN, ether, expectRevert} = require("openzeppelin-test-helpers
 
 const Account = artifacts.require("Account");
 const KeyManager = artifacts.require("SimpleKeyManager");
-const UniversalReciverTester = artifacts.require("UniversalReciverTester");
+const UniversalReceiverTester = artifacts.require("UniversalReceiverTester");
 const ExternalERC777UniversalReceiverTester = artifacts.require("ExternalERC777UniversalReceiverTester");
 
 // Get key: keccak256('ERC725Type')
@@ -320,7 +320,7 @@ contract("Account", accounts => {
             const account = await Account.new(owner, {from: owner});
 
             // use the checker contract to call account
-            let checker = await UniversalReciverTester.new();
+            let checker = await UniversalReceiverTester.new();
             let receipt = await checker.callImplementationAndReturn(
                 account.address,
                 RANDOM_BYTES32
@@ -346,7 +346,7 @@ contract("Account", accounts => {
             await account.setData(UNIVERSALRECEIVER_KEY, externalUniversalReceiver.address, {from: owner});
 
             // use the checker contract to call account
-            let checker = await UniversalReciverTester.new();
+            let checker = await UniversalReceiverTester.new();
             let receipt = await checker.callImplementationAndReturn(
                 account.address,
                 ERC777TokensRecipient

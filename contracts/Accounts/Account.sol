@@ -9,18 +9,16 @@ pragma solidity ^0.6.0;
 
 // interfaces
 import "../_LSPs/ILSP1_UniversalReceiver.sol";
+import "../_LSPs/ILSP1_UniversalReceiverDelegate.sol";
 
 // modules
 import "erc725/contracts/ERC725/ERC725Account.sol";
 import "@openzeppelin/contracts/introspection/ERC165.sol";
 
-interface ILSP1Delegate {
-    function universalReceiverDelegate(address sender, bytes32 typeId, bytes memory data) external returns (bytes32);
-}
-
 contract Account is ERC165, ERC725Account, ILSP1 {
 
     bytes4 _INTERFACE_ID_LSP1 = 0x6bb56a14;
+    bytes4 _INTERFACE_ID_LSP1DELEGATE = 0xc2d7bcc1;
 
     bytes32 constant private _TOKENS_RECIPIENT_INTERFACE_HASH =
     0x2352f13a810c120f366f70972476f743e16a9f2196b4b60037b84185ecde66d3; // keccak256("LSP1_ERC777TokensRecipient")
@@ -84,7 +82,9 @@ contract Account is ERC165, ERC725Account, ILSP1 {
         if (receiverData.length == 20) {
             address universalReceiverAddress = BytesLib.toAddress(receiverData, 0);
 
-            returnValue = ILSP1Delegate(universalReceiverAddress).universalReceiverDelegate(_msgSender(), _typeId, _data);
+            if(ERC165(universalReceiverAddress).supportsInterface(_INTERFACE_ID_LSP1DELEGATE)) {
+                returnValue = ILSP1Delegate(universalReceiverAddress).universalReceiverDelegate(_msgSender(), _typeId, _data);
+            }
         }
 
         emit UniversalReceiver(_msgSender(), _typeId, returnValue, _data);

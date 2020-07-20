@@ -5,6 +5,7 @@ import "../node_modules/erc725/contracts/ERC725/IERC725X.sol";
 import "../node_modules/erc725/contracts/ERC725/IERC725Y.sol";
 import "./_ERCs/IERC1271.sol";
 import "./_LSPs/ILSP1_UniversalReceiver.sol";
+import "./_LSPs/ILSP1_UniversalReceiverDelegate.sol";
 
 
 contract CalculateERC165Selectors {
@@ -13,6 +14,12 @@ contract CalculateERC165Selectors {
         ILSP1 i;
 
         return i.universalReceiver.selector;
+    }
+
+    function calculateSelectorLSP1Delegate() public pure returns (bytes4) {
+        ILSP1Delegate i;
+
+        return i.universalReceiverDelegate.selector;
     }
 
     function calculateSelectorERC725X() public pure returns (bytes4) {
