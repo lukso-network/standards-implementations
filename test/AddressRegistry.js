@@ -2,7 +2,7 @@ const {expectRevert} = require("openzeppelin-test-helpers");
 
 const Account = artifacts.require('Account');
 const AddressRegistry = artifacts.require('AddressRegistry');
-const AddressRegistryRequireERC725 = artifacts.require('AddressRegistryRequireERC725');
+const AddressRegistryRequiresERC725 = artifacts.require('AddressRegistryRequiresERC725');
 
 
 contract("Address Registry contracts", async (accounts) => {
@@ -85,7 +85,7 @@ contract("Address Registry contracts", async (accounts) => {
 
 
     // Require ERC725
-    context("AddressRegistryRequireERC725", async () => {
+    context("AddressRegistryRequiresERC725", async () => {
         let addressRegistryRequireERC725,
             account,
             owner;
@@ -93,7 +93,7 @@ contract("Address Registry contracts", async (accounts) => {
         before(async () => {
             owner = accounts[3];
             account = await Account.new(owner);
-            addressRegistryRequireERC725 = await AddressRegistryRequireERC725.new();
+            addressRegistryRequireERC725 = await AddressRegistryRequiresERC725.new();
         });
 
         it('add address', async function () {
