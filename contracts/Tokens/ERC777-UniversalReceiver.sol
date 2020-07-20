@@ -52,10 +52,10 @@ contract ERC777UniversalReceiver is ERC777 {
         }
     }
 
-    function mint(uint256 _amount) external virtual {
+    function mint(address _address, uint256 _amount) external virtual {
         require(_defaultOperators[_msgSender()], 'Only default operators can mint');
 
-        _mint(_msgSender(), _amount, "", "");
+        _mint(_address, _amount, "", "");
     }
 
     // add to expose for inheriting contracts

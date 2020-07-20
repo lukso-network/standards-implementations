@@ -5,10 +5,16 @@ pragma solidity ^0.6.0;
 import "erc725/contracts/ERC725/ERC725Y.sol";
 import "../Tokens/ERC777-UniversalReceiver.sol";
 import "@openzeppelin/contracts/utils/Pausable.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/utils/EnumerableSet.sol";
 
 
-abstract contract DigitalCertificate is Pausable, ERC725Y, ERC777UniversalReceiver {
+contract LSP3DigitalCertificate is Pausable, ERC725Y, ERC777UniversalReceiver {
+    using EnumerableSet for EnumerableSet.AddressSet;
 
+    // Here to track token holders, for future migration TODO remove in main chain
+    // makes transfers to expensive
+    EnumerableSet.AddressSet internal tokenHolders;
     bytes32[] public dataKeys;
     address public minter;
 
@@ -22,23 +28,24 @@ abstract contract DigitalCertificate is Pausable, ERC725Y, ERC777UniversalReceiv
     ERC725Y(newOwner)
     ERC777UniversalReceiver(name, symbol, defaultOperators)
     public {
-        // set owner as default operator
-        // allows to recover funds and mint
-        _defaultOperatorsArray.push(newOwner);
-        _defaultOperators[newOwner] = true;
-
         // set the owner as minter
         minter = newOwner;
     }
 
     /* non-standard public functions */
 
-    function mint(uint256 _amount)
+    function decimals() public pure override returns (uint8) {
+        return 0;
+    }
+
+    function mint(address _address, uint256 _amount)
     external
     override
     onlyMinter
     {
-        _mint(_msgSender(), _amount, "", "");
+        tokenHolders.add(_address);
+        
+        _mint(_address, _amount, "", "");
     }
 
     function removeMinter()
@@ -53,25 +60,28 @@ abstract contract DigitalCertificate is Pausable, ERC725Y, ERC777UniversalReceiv
     external
     {
         require(_defaultOperators[_msgSender()], 'Only default operators can call this function');
+
         for (uint256 i = 0; i < _defaultOperatorsArray.length; i++) {
             _defaultOperators[_defaultOperatorsArray[i]] = false;
         }
         delete _defaultOperatorsArray;
     }
 
+    // Here to track allow future migration TODO remove in main chain
     function pause()
-    internal
+    external
     whenNotPaused
+    onlyDefaultOperator
     {
-        require(_defaultOperators[_msgSender()], 'Only default operators can call this function');
         _pause();
     }
 
+    // Here to track allow future migration TODO remove in main chain
     function unpause()
-    internal
+    external
     whenPaused
+    onlyDefaultOperator
     {
-        require(_defaultOperators[_msgSender()], 'Only default operators can call this function');
         _unpause();
     }
 
@@ -82,6 +92,12 @@ abstract contract DigitalCertificate is Pausable, ERC725Y, ERC777UniversalReceiv
     function allDataKeys() public view returns (bytes32[] memory) {
         return dataKeys;
     }
+
+    // returns the bytes32 of all token holder addresses
+    function allTokenHolders() public view returns (bytes32[] memory) {
+        return tokenHolders._inner._values;
+    }
+
 
 
     /* Public functions */
@@ -100,6 +116,24 @@ abstract contract DigitalCertificate is Pausable, ERC725Y, ERC777UniversalReceiv
 
 
     /* Internal functions */
+
+    /**
+     * @dev Transfers ownership of the contract to a new account (`newOwner`).
+     * Can only be called by the current owner.
+     */
+    function transferOwnership(address newOwner)
+    public
+    override
+    onlyOwner
+    {
+        Ownable.transferOwnership(newOwner);
+
+        // also set new minter, if it was not removed before
+        if(minter != address(0)) {
+            minter = newOwner;
+        }
+    }
+
     function _move(
         address operator,
         address from,
@@ -112,11 +146,19 @@ abstract contract DigitalCertificate is Pausable, ERC725Y, ERC777UniversalReceiv
     override
     whenNotPaused
     {
+
+        tokenHolders.add(to);
+
         ERC777UniversalReceiver._move(operator, from, to, amount, userData, operatorData);
     }
 
 
     /* Modifers */
+    modifier onlyDefaultOperator() {
+        require(_defaultOperators[_msgSender()], 'Only default operators can call this function');
+        _;
+    }
+
     modifier onlyMinter() {
         require(_msgSender() == minter, 'Only minter can call this function');
         _;

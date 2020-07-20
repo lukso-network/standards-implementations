@@ -18,7 +18,7 @@ contract("ERC777 without 1820", accounts => {
 
     beforeEach(async () => {
         erc777 = await ERC777UniversalReceiver_1820.new("MyToken", "TKN", [accounts[0]]);
-        await erc777.mint('100000000', {from: accounts[0]});
+        await erc777.mint(accounts[0], '100000000', {from: accounts[0]});
         account = await Account.new(owner, {from: owner});
     });
 
