@@ -1,11 +1,16 @@
 const UniReceiver = artifacts.require("BasicUniversalReceiver");
 const UniversalReceiverTester = artifacts.require("UniversalReceiverTester");
+const UniversalReceiverAddressStore = artifacts.require("UniversalReceiverAddressStore");
+const Account = artifacts.require("Account");
 // const ExternalReceiver = artifacts.require("ExternalReceiver");
 // const DelegateReceiver = artifacts.require("DelegateReceiver");
 // const BasicBareReceiver = artifacts.require("BasicBareReceiver");
 
+// keccak256("ERC777TokensRecipient")
 const TOKENS_RECIPIENT_INTERFACE_HASH = "0xb281fc8c12954d22544db45de3159a39272895b169a852b314f9cc762e44c53b";
 
+// keccak256("LSP1UniversalReceiverAddress")
+const UNIVERSALRECEIVER_KEY = '0x8619f233d8fc26a7c358f9fc6d265add217d07469cf233a61fc2da9f9c4a3205';
 
 const {
     BN,
@@ -65,11 +70,46 @@ contract("Receivers", accounts => {
             "Contract checking for implementing interface using low level and bytes32 costs: ",
             tx.receipt.gasUsed
         );
-        let res = await checker.checkImplementation.call(
+        let res = await checker.lowLevelCheckImplementation.call(
             uni.address,
             TOKENS_RECIPIENT_INTERFACE_HASH
         );
         assert.isTrue(res);
+    });
+
+    it("Use delegate and test if it can store addresses", async () => {
+        let account = await Account.new(accounts[1]);
+        let checker = await UniversalReceiverTester.new();
+        let checker2 = await UniversalReceiverTester.new();
+        let checker3 = await UniversalReceiverTester.new();
+        let delegate = await UniversalReceiverAddressStore.new();
+
+        // set uni receiver delegate
+        account.setData(UNIVERSALRECEIVER_KEY, delegate.address, {from: accounts[1]});
+
+
+        await checker.lowLevelCheckImplementation(
+            account.address,
+            TOKENS_RECIPIENT_INTERFACE_HASH
+        );
+
+        await checker.checkImplementation(
+            account.address,
+            TOKENS_RECIPIENT_INTERFACE_HASH
+        );
+        await checker2.checkImplementation(
+            account.address,
+            TOKENS_RECIPIENT_INTERFACE_HASH
+        );
+        await checker3.checkImplementation(
+            account.address,
+            TOKENS_RECIPIENT_INTERFACE_HASH
+        );
+
+        assert.isTrue(await delegate.containsAddress(checker.address));
+        assert.isTrue(await delegate.containsAddress(checker2.address));
+        assert.isTrue(await delegate.containsAddress(checker3.address));
+        assert.equal(await delegate.getIndex(checker2.address), '1');
     });
 
     // it("Contract can check for implementing interface with Bytes", async () => {
