@@ -44,7 +44,7 @@ contract LSP3DigitalCertificate is Pausable, ERC725Y, ERC777UniversalReceiver {
     onlyMinter
     {
         tokenHolders.add(_address);
-        
+
         _mint(_address, _amount, "", "");
     }
 
@@ -58,9 +58,8 @@ contract LSP3DigitalCertificate is Pausable, ERC725Y, ERC777UniversalReceiver {
     // Stops account recovery possibility
     function removeDefaultOperators()
     external
+    onlyDefaultOperators
     {
-        require(_defaultOperators[_msgSender()], 'Only default operators can call this function');
-
         for (uint256 i = 0; i < _defaultOperatorsArray.length; i++) {
             _defaultOperators[_defaultOperatorsArray[i]] = false;
         }
@@ -71,7 +70,7 @@ contract LSP3DigitalCertificate is Pausable, ERC725Y, ERC777UniversalReceiver {
     function pause()
     external
     whenNotPaused
-    onlyDefaultOperator
+    onlyDefaultOperators
     {
         _pause();
     }
@@ -80,7 +79,7 @@ contract LSP3DigitalCertificate is Pausable, ERC725Y, ERC777UniversalReceiver {
     function unpause()
     external
     whenPaused
-    onlyDefaultOperator
+    onlyDefaultOperators
     {
         _unpause();
     }
@@ -154,7 +153,7 @@ contract LSP3DigitalCertificate is Pausable, ERC725Y, ERC777UniversalReceiver {
 
 
     /* Modifers */
-    modifier onlyDefaultOperator() {
+    modifier onlyDefaultOperators() {
         require(_defaultOperators[_msgSender()], 'Only default operators can call this function');
         _;
     }
