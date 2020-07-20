@@ -52,10 +52,26 @@ contract ERC777UniversalReceiver is ERC777 {
         }
     }
 
-    function mint(uint256 _amount) external {
+    function mint(uint256 _amount) external virtual {
         require(_defaultOperators[_msgSender()], 'Only default operators can mint');
 
         _mint(_msgSender(), _amount, "", "");
+    }
+
+    // add to expose for inheriting contracts
+    function _move(
+        address operator,
+        address from,
+        address to,
+        uint256 amount,
+        bytes memory userData,
+        bytes memory operatorData
+    )
+    internal
+    virtual
+    override
+    {
+        ERC777._move(operator, from, to, amount, userData, operatorData);
     }
 
     /**
@@ -122,7 +138,7 @@ contract ERC777UniversalReceiver is ERC777 {
             bytes memory data = abi.encodePacked(operator, from, to, amount, userData, operatorData);
             ILSP1(to).universalReceiver(_TOKENS_SENDER_INTERFACE_HASH, data);
         } else if (requireReceptionAck) {
-            require(!to.isContract(), "ERC777: token recipient contract has no universal receiver for 'LSP1_ERC777TokensRecipient'");
+            require(!to.isContract(), "ERC777: token recipient contract has no universal receiver for 'ERC777TokensRecipient'");
         }
     }
 }

@@ -1,6 +1,6 @@
 const {singletons, BN, ether, expectRevert} = require("openzeppelin-test-helpers");
 
-const Account = artifacts.require("Account");
+const LSP2Account = artifacts.require("Account");
 const KeyManager = artifacts.require("SimpleKeyManager");
 const UniversalReceiverTester = artifacts.require("UniversalReceiverTester");
 const ExternalERC777UniversalReceiverTester = artifacts.require("ExternalERC777UniversalReceiverTester");
@@ -31,7 +31,7 @@ contract("Account", accounts => {
     context("Accounts Deployment", async () => {
         it("Deploys correctly, and compare owners", async () => {
             const owner = accounts[2];
-            const account = await Account.new(owner, {from: owner});
+            const account = await LSP2Account.new(owner, {from: owner});
 
             const idOwner = await account.owner.call();
 
@@ -42,7 +42,7 @@ contract("Account", accounts => {
     context("ERC165", async () => {
         it("Supports ERC165", async () => {
             const owner = accounts[2];
-            const account = await Account.new(owner, {from: owner});
+            const account = await LSP2Account.new(owner, {from: owner});
             const interfaceID = '0x01ffc9a7';
 
             const result = await account.supportsInterface.call(interfaceID);
@@ -51,7 +51,7 @@ contract("Account", accounts => {
         });
         it("Supports ERC725X", async () => {
             const owner = accounts[2];
-            const account = await Account.new(owner, {from: owner});
+            const account = await LSP2Account.new(owner, {from: owner});
             const interfaceID = '0x44c028fe';
 
             const result = await account.supportsInterface.call(interfaceID);
@@ -60,7 +60,7 @@ contract("Account", accounts => {
         });
         it("Supports ERC725Y", async () => {
             const owner = accounts[2];
-            const account = await Account.new(owner, {from: owner});
+            const account = await LSP2Account.new(owner, {from: owner});
             const interfaceID = '0x2bd57b73';
 
             const result = await account.supportsInterface.call(interfaceID);
@@ -69,7 +69,7 @@ contract("Account", accounts => {
         });
         it("Supports ERC1271", async () => {
             const owner = accounts[2];
-            const account = await Account.new(owner, {from: owner});
+            const account = await LSP2Account.new(owner, {from: owner});
             const interfaceID = '0x1626ba7e';
 
             const result = await account.supportsInterface.call(interfaceID);
@@ -78,7 +78,7 @@ contract("Account", accounts => {
         });
         it("Supports LSP1", async () => {
             const owner = accounts[2];
-            const account = await Account.new(owner, {from: owner});
+            const account = await LSP2Account.new(owner, {from: owner});
             const interfaceID = '0x6bb56a14';
 
             const result = await account.supportsInterface.call(interfaceID);
@@ -88,7 +88,7 @@ contract("Account", accounts => {
 
         it("Has ERC725Type set to ERC725Account", async () => {
             const owner = accounts[2];
-            const account = await Account.new(owner, {from: owner});
+            const account = await LSP2Account.new(owner, {from: owner});
             assert.equal(await account.getData(ERC725Type_KEY), ERC725Account_VALUE);
         });
     });
@@ -96,7 +96,7 @@ contract("Account", accounts => {
     context("ERC1271", async () => {
         it("Can verify signature from owner", async () => {
             const owner = accounts[2];
-            const account = await Account.new(DUMMY_SIGNER.address, {from: owner});
+            const account = await LSP2Account.new(DUMMY_SIGNER.address, {from: owner});
             const dataToSign = '0xcafecafe';
             const signature = DUMMY_SIGNER.sign(dataToSign);
 
@@ -106,7 +106,7 @@ contract("Account", accounts => {
         });
         it("Should fail when verifying signature from not-owner", async () => {
             const owner = accounts[2];
-            const account = await Account.new(owner, {from: owner});
+            const account = await LSP2Account.new(owner, {from: owner});
             const dataToSign = '0xcafecafe';
             const signature = DUMMY_SIGNER.sign(dataToSign);
 
@@ -122,7 +122,7 @@ contract("Account", accounts => {
         let count = 1000000000;
 
         it("Create account", async () => {
-            account = await Account.new(owner, {from: owner});
+            account = await LSP2Account.new(owner, {from: owner});
 
             assert.equal(await account.owner.call(), owner);
         });
@@ -198,7 +198,7 @@ contract("Account", accounts => {
         let account = {};
 
         beforeEach(async () => {
-            account = await Account.new(owner, {from: owner});
+            account = await LSP2Account.new(owner, {from: owner});
         });
 
         it("Uprade ownership correctly", async () => {
@@ -317,7 +317,7 @@ contract("Account", accounts => {
     context("Universal Receiver", async () => {
         it("Call account and check for 'UniversalReceiver' event", async () => {
             const owner = accounts[2];
-            const account = await Account.new(owner, {from: owner});
+            const account = await LSP2Account.new(owner, {from: owner});
 
             // use the checker contract to call account
             let checker = await UniversalReceiverTester.new();
@@ -339,7 +339,7 @@ contract("Account", accounts => {
         });
         it("Call account and check for 'ReceivedERC777' event in external account", async () => {
             const owner = accounts[2];
-            const account = await Account.new(owner, {from: owner});
+            const account = await LSP2Account.new(owner, {from: owner});
             const externalUniversalReceiver = await ExternalERC777UniversalReceiverTester.new({from: owner});
 
             // set account2 as new receiver for account1
@@ -387,7 +387,7 @@ contract("Account", accounts => {
         const owner = accounts[6];
 
         beforeEach(async () => {
-            account = await Account.new(owner, {from: owner});
+            account = await LSP2Account.new(owner, {from: owner});
             manager = await KeyManager.new(account.address, owner, {from: owner});
             await account.transferOwnership(manager.address, {from: owner});
         });
@@ -411,7 +411,7 @@ contract("Account", accounts => {
             });
             it("Can verify signature from owner of keymanager", async () => {
 
-                account = await Account.new(owner, {from: owner});
+                account = await LSP2Account.new(owner, {from: owner});
                 manager = await KeyManager.new(account.address, DUMMY_SIGNER.address, {from: owner});
                 await account.transferOwnership(manager.address, {from: owner});
 

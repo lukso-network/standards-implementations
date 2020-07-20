@@ -116,7 +116,7 @@ contract ERC777UniversalReceiver_1820 is ERC777 {
             bytes memory data = abi.encodePacked(operator, from, to, amount, userData, operatorData);
             ILSP1(implementer).universalReceiver(_TOKENS_RECIPIENT_INTERFACE_HASH, data);
         } else if (requireReceptionAck) {
-            require(!to.isContract(), "ERC777: token recipient contract has no universal receiver for 'LSP1_ERC777TokensRecipient'");
+            require(!to.isContract(), "ERC777: token recipient contract has no universal receiver for 'ERC777TokensRecipient'");
         }
     }
 }

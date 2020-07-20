@@ -20,9 +20,6 @@ contract Account is ERC165, ERC725Account, ILSP1 {
     bytes4 _INTERFACE_ID_LSP1 = 0x6bb56a14;
     bytes4 _INTERFACE_ID_LSP1DELEGATE = 0xc2d7bcc1;
 
-    bytes32 constant private _TOKENS_RECIPIENT_INTERFACE_HASH =
-    0x2352f13a810c120f366f70972476f743e16a9f2196b4b60037b84185ecde66d3; // keccak256("LSP1_ERC777TokensRecipient")
-
     bytes32 constant private _UNIVERSAL_RECEIVER_DELEGATE_KEY =
     0x0cfc51aec37c55a4d0b1a65c6255c4bf2fbdf6277f3cc0730c45b828b6db8b47; // keccak256("LSP1UniversalReceiverDelegate")
 

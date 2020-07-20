@@ -21,7 +21,7 @@ contract("Registries", accounts => {
     const accountInterface = "0x80ac58cd";
     const erc165InterfaceHash = web3.utils.soliditySha3("ERC165");
     const erc165Invalid = "0xffffffffffffffffffffffffffff";
-    const accountInterfaceHash = web3.utils.soliditySha3("Account");
+    const accountInterfaceHash = web3.utils.soliditySha3("LSP2Account");
 
     beforeEach(async () => {
         erc156 = await ERC165MappingImplementation.new();

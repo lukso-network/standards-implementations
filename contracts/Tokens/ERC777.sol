@@ -386,7 +386,8 @@ contract ERC777 is Context, IERC777, IERC20 {
         bytes memory userData,
         bytes memory operatorData
     )
-        private
+        internal
+        virtual
     {
         _beforeTokenTransfer(operator, from, to, amount);
 

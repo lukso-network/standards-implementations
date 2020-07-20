@@ -114,9 +114,9 @@ contract("Address Registry contracts", async (accounts) => {
         });
         it('should fail if called by a regular address', async function () {
 
-            expectRevert(
-                addressRegistryRequireERC725.addAddress(accounts[5]),
-                "Only ERC725Y can call this function"
+            //simply reverts as no ERC165 is detected
+            await expectRevert.unspecified(
+                addressRegistryRequireERC725.addAddress(accounts[5])
             );
         });
     });
