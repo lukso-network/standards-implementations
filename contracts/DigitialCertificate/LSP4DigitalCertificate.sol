@@ -9,7 +9,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/EnumerableSet.sol";
 
 
-contract LSP3DigitalCertificate is Pausable, ERC725Y, ERC777UniversalReceiver {
+contract LSP4DigitalCertificate is Pausable, ERC725Y, ERC777UniversalReceiver {
     using EnumerableSet for EnumerableSet.AddressSet;
 
     // Here to track token holders, for future migration TODO remove in main chain

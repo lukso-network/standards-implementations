@@ -1,9 +1,9 @@
 const {expectRevert, singletons} = require("openzeppelin-test-helpers");
 
 
-const Account = artifacts.require("Account");
+const Account = artifacts.require("LSP3Account");
 const PlainERC725Account = artifacts.require("ERC725Account");
-const DigitalCertificateFungible = artifacts.require("LSP3DigitalCertificate");
+const DigitalCertificateFungible = artifacts.require("LSP4DigitalCertificate");
 const ExternalERC777UniversalReceiverTester = artifacts.require("ExternalERC777UniversalReceiverTester");
 const ExternalERC777UniversalReceiverRejectTester = artifacts.require("ExternalERC777UniversalReceiverRejectTester");
 
@@ -22,7 +22,7 @@ const OPERATION_CALL = 0;
 // removeDefaultOperators
 
 
-contract("LSP3DigitalCertificate", accounts => {
+contract("LSP4DigitalCertificate", accounts => {
     const owner = accounts[9];
     let account,
         tokenHolder = accounts[1],

@@ -1,5 +1,5 @@
 const ERC777UniversalReceiver_1820 = artifacts.require("ERC777UniversalReceiver");
-const Account = artifacts.require("Account");
+const Account = artifacts.require("LSP3Account");
 const PlainERC725Account = artifacts.require("ERC725Account");
 const ExternalERC777UniversalReceiverTester = artifacts.require("ExternalERC777UniversalReceiverTester");
 const ExternalERC777UniversalReceiverRejectTester = artifacts.require("ExternalERC777UniversalReceiverRejectTester");

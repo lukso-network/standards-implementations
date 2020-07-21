@@ -1,6 +1,6 @@
 const {expectRevert} = require("openzeppelin-test-helpers");
 
-const Account = artifacts.require('Account');
+const Account = artifacts.require('LSP3Account');
 const AddressRegistry = artifacts.require('AddressRegistry');
 const AddressRegistryRequiresERC725 = artifacts.require('AddressRegistryRequiresERC725');
 

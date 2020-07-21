@@ -15,7 +15,7 @@ import "../_LSPs/ILSP1_UniversalReceiverDelegate.sol";
 import "erc725/contracts/ERC725/ERC725Account.sol";
 import "@openzeppelin/contracts/introspection/ERC165.sol";
 
-contract Account is ERC165, ERC725Account, ILSP1 {
+contract LSP3Account is ERC165, ERC725Account, ILSP1 {
 
     bytes4 _INTERFACE_ID_LSP1 = 0x6bb56a14;
     bytes4 _INTERFACE_ID_LSP1DELEGATE = 0xc2d7bcc1;

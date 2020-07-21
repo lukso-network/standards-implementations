@@ -1,6 +1,6 @@
 const {expectRevert} = require("openzeppelin-test-helpers");
 
-const Account = artifacts.require("Account");
+const Account = artifacts.require("LSP3Account");
 const KeyManager = artifacts.require('SimpleKeyManager');
 
 // keccak256("EXECUTOR_ROLE")
