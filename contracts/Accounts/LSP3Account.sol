@@ -25,8 +25,6 @@ contract LSP3Account is ERC165, ERC725Account, ILSP1 {
 
     bytes32[] public dataKeys;
 
-
-
     constructor(address _newOwner) ERC725Account(_newOwner) public {
 
         // Add the key of the ERC725Type set in the constructor of ERC725Account.sol
