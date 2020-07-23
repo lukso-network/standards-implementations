@@ -14,7 +14,7 @@ contract AddressRegistryRequiresERC725 is AddressRegistry {
     override
     returns(bool)
     {
-        require(ERC165(msg.sender).supportsInterface(_INTERFACE_ID_ERC725Y), 'Only ERC725Y can call this function');
+        require(ERC165(_address).supportsInterface(_INTERFACE_ID_ERC725Y), 'Only ERC725Y addresses can be added');
         return addressSet.add(_address);
     }
 
@@ -24,6 +24,7 @@ contract AddressRegistryRequiresERC725 is AddressRegistry {
     returns(bool)
     {
         require(ERC165(msg.sender).supportsInterface(_INTERFACE_ID_ERC725Y), 'Only ERC725Y can call this function');
+        require(msg.sender == _address, 'Only an address can remove itself.');
         return addressSet.remove(_address);
     }
 }

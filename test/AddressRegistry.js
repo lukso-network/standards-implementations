@@ -98,19 +98,25 @@ contract("Address Registry contracts", async (accounts) => {
 
         it('add address', async function () {
 
-            let abi = addressRegistryRequireERC725.contract.methods.addAddress(accounts[1]).encodeABI();
+            let abi = addressRegistryRequireERC725.contract.methods.addAddress(account.address).encodeABI();
 
-            account.execute(0, addressRegistryRequireERC725.address, 0, abi, {from: owner});
+            await account.execute(0, addressRegistryRequireERC725.address, 0, abi, {from: owner});
 
-            assert.equal(await addressRegistryRequireERC725.getAddress(0), accounts[1]);
+            assert.equal(await addressRegistryRequireERC725.getAddress(0), account.address);
+        });
+        it('external account adds address', async function () {
+
+            await addressRegistryRequireERC725.addAddress(account.address, {from: accounts[5]});
+
+            assert.equal(await addressRegistryRequireERC725.getAddress(0), account.address);
         });
         it('remove address', async function () {
 
-            let abi = addressRegistryRequireERC725.contract.methods.removeAddress(accounts[1]).encodeABI();
+            let abi = addressRegistryRequireERC725.contract.methods.removeAddress(account.address).encodeABI();
 
-            account.execute(0, addressRegistryRequireERC725.address, 0, abi, {from: owner});
+            await account.execute(0, addressRegistryRequireERC725.address, 0, abi, {from: owner});
 
-            assert.isFalse(await addressRegistryRequireERC725.containsAddress(accounts[1]));
+            assert.isFalse(await addressRegistryRequireERC725.containsAddress(account.address));
         });
         it('should fail if called by a regular address', async function () {
 
