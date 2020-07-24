@@ -1,7 +1,7 @@
 const UniReceiver = artifacts.require("BasicUniversalReceiver");
 const UniversalReceiverTester = artifacts.require("UniversalReceiverTester");
 const UniversalReceiverAddressStore = artifacts.require("UniversalReceiverAddressStore");
-const Account = artifacts.require("Account");
+const Account = artifacts.require("LSP3Account");
 // const ExternalReceiver = artifacts.require("ExternalReceiver");
 // const DelegateReceiver = artifacts.require("DelegateReceiver");
 // const BasicBareReceiver = artifacts.require("BasicBareReceiver");

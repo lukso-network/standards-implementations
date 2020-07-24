@@ -1,4 +1,4 @@
-const ERC777UniversalReceiver_1820 = artifacts.require("ERC777UniversalReceiver");
+const ERC777UniversalReceiver = artifacts.require("ERC777UniversalReceiver");
 const Account = artifacts.require("LSP3Account");
 const PlainERC725Account = artifacts.require("ERC725Account");
 const ExternalERC777UniversalReceiverTester = artifacts.require("ExternalERC777UniversalReceiverTester");
@@ -17,7 +17,7 @@ contract("ERC777 without 1820", accounts => {
         erc777 = {};
 
     beforeEach(async () => {
-        erc777 = await ERC777UniversalReceiver_1820.new("MyToken", "TKN", [accounts[0]]);
+        erc777 = await ERC777UniversalReceiver.new("MyToken", "TKN", [accounts[0]]);
         await erc777.mint(accounts[0], '100000000', {from: accounts[0]});
         account = await Account.new(owner, {from: owner});
     });

@@ -1,9 +1,12 @@
 const {singletons, BN, ether, expectRevert} = require("openzeppelin-test-helpers");
 
-const LSP2Account = artifacts.require("Account");
+const LSP3Account = artifacts.require("LSP3Account");
 const KeyManager = artifacts.require("SimpleKeyManager");
+const DigitalCertificateFungible = artifacts.require("LSP4DigitalCertificate");
+const ERC777UniversalReceiver = artifacts.require("ERC777UniversalReceiver");
 const UniversalReceiverTester = artifacts.require("UniversalReceiverTester");
 const ExternalERC777UniversalReceiverTester = artifacts.require("ExternalERC777UniversalReceiverTester");
+const UniversalReceiverAddressStore = artifacts.require("UniversalReceiverAddressStore");
 
 // Get key: keccak256('ERC725Type')
 const ERC725Type_KEY = '0xee97c7dd2e734cf234c2ba0d83a74633e1ac7fc8a9fd779f8497a0109c71b993';
@@ -22,7 +25,7 @@ const DUMMY_PRIVATEKEY = '0xcafecafe7D0F0EBcafeC2D7cafe84cafe3248DDcafe8B80C421C
 const DUMMY_SIGNER = web3.eth.accounts.wallet.add(DUMMY_PRIVATEKEY);
 
 
-contract("Account", accounts => {
+contract("LSP3Account", accounts => {
     let erc1820;
     beforeEach(async function () {
         erc1820 = await singletons.ERC1820Registry(accounts[1]);
@@ -31,7 +34,7 @@ contract("Account", accounts => {
     context("Accounts Deployment", async () => {
         it("Deploys correctly, and compare owners", async () => {
             const owner = accounts[2];
-            const account = await LSP2Account.new(owner, {from: owner});
+            const account = await LSP3Account.new(owner, {from: owner});
 
             const idOwner = await account.owner.call();
 
@@ -42,7 +45,7 @@ contract("Account", accounts => {
     context("ERC165", async () => {
         it("Supports ERC165", async () => {
             const owner = accounts[2];
-            const account = await LSP2Account.new(owner, {from: owner});
+            const account = await LSP3Account.new(owner, {from: owner});
             const interfaceID = '0x01ffc9a7';
 
             const result = await account.supportsInterface.call(interfaceID);
@@ -51,7 +54,7 @@ contract("Account", accounts => {
         });
         it("Supports ERC725X", async () => {
             const owner = accounts[2];
-            const account = await LSP2Account.new(owner, {from: owner});
+            const account = await LSP3Account.new(owner, {from: owner});
             const interfaceID = '0x44c028fe';
 
             const result = await account.supportsInterface.call(interfaceID);
@@ -60,7 +63,7 @@ contract("Account", accounts => {
         });
         it("Supports ERC725Y", async () => {
             const owner = accounts[2];
-            const account = await LSP2Account.new(owner, {from: owner});
+            const account = await LSP3Account.new(owner, {from: owner});
             const interfaceID = '0x2bd57b73';
 
             const result = await account.supportsInterface.call(interfaceID);
@@ -69,7 +72,7 @@ contract("Account", accounts => {
         });
         it("Supports ERC1271", async () => {
             const owner = accounts[2];
-            const account = await LSP2Account.new(owner, {from: owner});
+            const account = await LSP3Account.new(owner, {from: owner});
             const interfaceID = '0x1626ba7e';
 
             const result = await account.supportsInterface.call(interfaceID);
@@ -78,7 +81,7 @@ contract("Account", accounts => {
         });
         it("Supports LSP1", async () => {
             const owner = accounts[2];
-            const account = await LSP2Account.new(owner, {from: owner});
+            const account = await LSP3Account.new(owner, {from: owner});
             const interfaceID = '0x6bb56a14';
 
             const result = await account.supportsInterface.call(interfaceID);
@@ -88,7 +91,7 @@ contract("Account", accounts => {
 
         it("Has ERC725Type set to ERC725Account", async () => {
             const owner = accounts[2];
-            const account = await LSP2Account.new(owner, {from: owner});
+            const account = await LSP3Account.new(owner, {from: owner});
             assert.equal(await account.getData(ERC725Type_KEY), ERC725Account_VALUE);
         });
     });
@@ -96,7 +99,7 @@ contract("Account", accounts => {
     context("ERC1271", async () => {
         it("Can verify signature from owner", async () => {
             const owner = accounts[2];
-            const account = await LSP2Account.new(DUMMY_SIGNER.address, {from: owner});
+            const account = await LSP3Account.new(DUMMY_SIGNER.address, {from: owner});
             const dataToSign = '0xcafecafe';
             const signature = DUMMY_SIGNER.sign(dataToSign);
 
@@ -106,7 +109,7 @@ contract("Account", accounts => {
         });
         it("Should fail when verifying signature from not-owner", async () => {
             const owner = accounts[2];
-            const account = await LSP2Account.new(owner, {from: owner});
+            const account = await LSP3Account.new(owner, {from: owner});
             const dataToSign = '0xcafecafe';
             const signature = DUMMY_SIGNER.sign(dataToSign);
 
@@ -122,7 +125,7 @@ contract("Account", accounts => {
         let count = 1000000000;
 
         it("Create account", async () => {
-            account = await LSP2Account.new(owner, {from: owner});
+            account = await LSP3Account.new(owner, {from: owner});
 
             assert.equal(await account.owner.call(), owner);
         });
@@ -198,7 +201,7 @@ contract("Account", accounts => {
         let account = {};
 
         beforeEach(async () => {
-            account = await LSP2Account.new(owner, {from: owner});
+            account = await LSP3Account.new(owner, {from: owner});
         });
 
         it("Uprade ownership correctly", async () => {
@@ -317,7 +320,7 @@ contract("Account", accounts => {
     context("Universal Receiver", async () => {
         it("Call account and check for 'UniversalReceiver' event", async () => {
             const owner = accounts[2];
-            const account = await LSP2Account.new(owner, {from: owner});
+            const account = await LSP3Account.new(owner, {from: owner});
 
             // use the checker contract to call account
             let checker = await UniversalReceiverTester.new();
@@ -339,7 +342,7 @@ contract("Account", accounts => {
         });
         it("Call account and check for 'ReceivedERC777' event in external account", async () => {
             const owner = accounts[2];
-            const account = await LSP2Account.new(owner, {from: owner});
+            const account = await LSP3Account.new(owner, {from: owner});
             const externalUniversalReceiver = await ExternalERC777UniversalReceiverTester.new({from: owner});
 
             // set account2 as new receiver for account1
@@ -379,6 +382,106 @@ contract("Account", accounts => {
             assert.equal(receipt.receipt.rawLogs[1].data, '0x00000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000000');
 
         });
+        it("Mint from ERC777 and LSP4 to account", async () => {
+            const owner = accounts[2];
+            const account = await LSP3Account.new(owner, {from: owner});
+            const universalReceiverDelegate = await UniversalReceiverAddressStore.new(account.address, {from: owner});
+
+            let tokenOwner = accounts[2];
+
+            let erc777 = await ERC777UniversalReceiver.new("MyToken", "TKN", [tokenOwner]);
+            let digitalCertificate = await DigitalCertificateFungible.new(tokenOwner, "MyDigitalCloth", "DIGICLOTH01", []);
+
+            assert.equal(await erc777.balanceOf(account.address), '0');
+            assert.equal(await digitalCertificate.balanceOf(account.address), '0');
+
+            await erc777.mint(account.address, '50', {from: tokenOwner});
+
+            assert.equal(await erc777.balanceOf(account.address), '50');
+
+            await digitalCertificate.mint(account.address, '50', {from: tokenOwner});
+
+            assert.equal(await digitalCertificate.balanceOf(account.address), '50');
+
+        });
+        it("Transfer from ERC777 and LSP4 to account", async () => {
+            const owner = accounts[2];
+            const account = await LSP3Account.new(owner, {from: owner});
+            const universalReceiverDelegate = await UniversalReceiverAddressStore.new(account.address, {from: owner});
+
+            let tokenOwner = accounts[2];
+
+            let erc777 = await ERC777UniversalReceiver.new("MyToken", "TKN", [tokenOwner]);
+            let digitalCertificate = await DigitalCertificateFungible.new(tokenOwner, "MyDigitalCloth", "DIGICLOTH01", []);
+
+            await erc777.mint(tokenOwner, '100', {from: tokenOwner});
+            await digitalCertificate.mint(tokenOwner, '100', {from: tokenOwner});
+
+            assert.equal(await erc777.balanceOf(account.address), '0');
+            assert.equal(await digitalCertificate.balanceOf(account.address), '0');
+
+            await erc777.send(account.address, '50', "0x", {from: tokenOwner});
+            await erc777.transfer(account.address, '50', {from: tokenOwner});
+            await digitalCertificate.send(account.address, '50', "0x", {from: tokenOwner});
+            await digitalCertificate.transfer(account.address, '50', {from: tokenOwner});
+
+            assert.equal(await erc777.balanceOf(account.address), '100');
+            assert.equal(await digitalCertificate.balanceOf(account.address), '100');
+
+        });
+        it("Mint from ERC777 and LSP4 to account and delegate to UniversalReceiverAddressStore", async () => {
+            const owner = accounts[2];
+            const account = await LSP3Account.new(owner, {from: owner});
+            const universalReceiverDelegate = await UniversalReceiverAddressStore.new(account.address, {from: owner});
+
+            // set account2 as new receiver for account1
+            await account.setData(UNIVERSALRECEIVER_KEY, universalReceiverDelegate.address, {from: owner});
+
+            let tokenOwner = accounts[2];
+
+            let erc777 = await ERC777UniversalReceiver.new("MyToken", "TKN", [tokenOwner]);
+            let digitalCertificate = await DigitalCertificateFungible.new(tokenOwner, "MyDigitalCloth", "DIGICLOTH01", []);
+
+            assert.equal(await erc777.balanceOf(account.address), '0');
+            assert.equal(await digitalCertificate.balanceOf(account.address), '0');
+
+            await erc777.mint(account.address, '50', {from: tokenOwner});
+
+            assert.equal(await erc777.balanceOf(account.address), '50');
+
+            await digitalCertificate.mint(account.address, '50', {from: tokenOwner});
+
+            assert.equal(await digitalCertificate.balanceOf(account.address), '50');
+
+        });
+        it("Transfer from ERC777 and LSP4 to account and delegate to UniversalReceiverAddressStore", async () => {
+            const owner = accounts[2];
+            const account = await LSP3Account.new(owner, {from: owner});
+            const universalReceiverDelegate = await UniversalReceiverAddressStore.new(account.address, {from: owner});
+
+            // set account2 as new receiver for account1
+            await account.setData(UNIVERSALRECEIVER_KEY, universalReceiverDelegate.address, {from: owner});
+
+            let tokenOwner = accounts[2];
+
+            let erc777 = await ERC777UniversalReceiver.new("MyToken", "TKN", [tokenOwner]);
+            let digitalCertificate = await DigitalCertificateFungible.new(tokenOwner, "MyDigitalCloth", "DIGICLOTH01", []);
+
+            await erc777.mint(tokenOwner, '100', {from: tokenOwner});
+            await digitalCertificate.mint(tokenOwner, '100', {from: tokenOwner});
+
+            assert.equal(await erc777.balanceOf(account.address), '0');
+            assert.equal(await digitalCertificate.balanceOf(account.address), '0');
+
+            await erc777.send(account.address, '50', "0x", {from: tokenOwner});
+            await erc777.transfer(account.address, '50', {from: tokenOwner});
+            await digitalCertificate.send(account.address, '50', "0x", {from: tokenOwner});
+            await digitalCertificate.transfer(account.address, '50', {from: tokenOwner});
+
+            assert.equal(await erc777.balanceOf(account.address), '100');
+            assert.equal(await digitalCertificate.balanceOf(account.address), '100');
+
+        });
     }); //Context Universal Receiver
 
     context("Using key manager as owner", async () => {
@@ -387,7 +490,7 @@ contract("Account", accounts => {
         const owner = accounts[6];
 
         beforeEach(async () => {
-            account = await LSP2Account.new(owner, {from: owner});
+            account = await LSP3Account.new(owner, {from: owner});
             manager = await KeyManager.new(account.address, owner, {from: owner});
             await account.transferOwnership(manager.address, {from: owner});
         });
@@ -411,7 +514,7 @@ contract("Account", accounts => {
             });
             it("Can verify signature from owner of keymanager", async () => {
 
-                account = await LSP2Account.new(owner, {from: owner});
+                account = await LSP3Account.new(owner, {from: owner});
                 manager = await KeyManager.new(account.address, DUMMY_SIGNER.address, {from: owner});
                 await account.transferOwnership(manager.address, {from: owner});
 

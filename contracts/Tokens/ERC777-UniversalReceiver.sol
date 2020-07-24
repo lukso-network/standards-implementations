@@ -136,7 +136,7 @@ contract ERC777UniversalReceiver is ERC777 {
     {
         if (ERC165Checker.supportsERC165(to) && ERC165Checker.supportsInterface(to, _INTERFACE_ID_LSP1)) {
             bytes memory data = abi.encodePacked(operator, from, to, amount, userData, operatorData);
-            ILSP1(to).universalReceiver(_TOKENS_SENDER_INTERFACE_HASH, data);
+            ILSP1(to).universalReceiver(_TOKENS_RECIPIENT_INTERFACE_HASH, data);
         } else if (requireReceptionAck) {
             require(!to.isContract(), "ERC777: token recipient contract has no universal receiver for 'ERC777TokensRecipient'");
         }
