@@ -453,6 +453,9 @@ contract("LSP3Account", accounts => {
 
             assert.equal(await digitalCertificate.balanceOf(account.address), '50');
 
+            assert.isTrue(await universalReceiverDelegate.containsAddress(erc777.address));
+            assert.isTrue(await universalReceiverDelegate.containsAddress(digitalCertificate.address));
+
         });
         it("Transfer from ERC777 and LSP4 to account and delegate to UniversalReceiverAddressStore", async () => {
             const owner = accounts[2];
@@ -480,6 +483,9 @@ contract("LSP3Account", accounts => {
 
             assert.equal(await erc777.balanceOf(account.address), '100');
             assert.equal(await digitalCertificate.balanceOf(account.address), '100');
+
+            assert.isTrue(await universalReceiverDelegate.containsAddress(erc777.address));
+            assert.isTrue(await universalReceiverDelegate.containsAddress(digitalCertificate.address));
 
         });
     }); //Context Universal Receiver
