@@ -25,9 +25,11 @@ contract UniversalReceiverAddressStore is ERC165, ILSP1Delegate, AddressRegistry
 
     function universalReceiverDelegate(address sender, bytes32 typeId, bytes memory) external override returns (bytes32) {
         require(msg.sender == account, 'Only the connected account call this function');
-        require(typeId == _TOKENS_RECIPIENT_INTERFACE_HASH, 'UniversalReceiverDelegate: Type not supported');
+//        require(typeId == _TOKENS_RECIPIENT_INTERFACE_HASH, 'UniversalReceiverDelegate: Type not supported');
 
-        addAddress(sender);
+        // store tokens only if received, DO NOT revert on _TOKENS_SENDER_INTERFACE_HASH
+        if(typeId == _TOKENS_RECIPIENT_INTERFACE_HASH)
+            addAddress(sender);
 
         return typeId;
     }

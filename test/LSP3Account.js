@@ -391,7 +391,7 @@ contract("LSP3Account", accounts => {
             assert.equal(receipt.receipt.rawLogs[1].data, '0x00000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000000');
 
         });
-        it("Mint from ERC777 and LSP4 to account", async () => {
+        it("Mint ERC777 and LSP4 to LSP3 account", async () => {
             const owner = accounts[2];
             const account = await LSP3Account.new(owner, {from: owner});
             const universalReceiverDelegate = await UniversalReceiverAddressStore.new(account.address, {from: owner});
@@ -413,7 +413,7 @@ contract("LSP3Account", accounts => {
             assert.equal(await digitalCertificate.balanceOf(account.address), '50');
 
         });
-        it("Transfer from ERC777 and LSP4 to account", async () => {
+        it("Transfer ERC777 and LSP4 to LSP3 account", async () => {
             const owner = accounts[2];
             const account = await LSP3Account.new(owner, {from: owner});
             const universalReceiverDelegate = await UniversalReceiverAddressStore.new(account.address, {from: owner});
@@ -438,7 +438,7 @@ contract("LSP3Account", accounts => {
             assert.equal(await digitalCertificate.balanceOf(account.address), '100');
 
         });
-        it("Mint from ERC777 and LSP4 to account and delegate to UniversalReceiverAddressStore", async () => {
+        it("Mint ERC777 and LSP4 to LSP3 account and delegate to UniversalReceiverAddressStore", async () => {
             const owner = accounts[2];
             const account = await LSP3Account.new(owner, {from: owner});
             const universalReceiverDelegate = await UniversalReceiverAddressStore.new(account.address, {from: owner});
@@ -461,12 +461,44 @@ contract("LSP3Account", accounts => {
             await digitalCertificate.mint(account.address, '50', {from: tokenOwner});
 
             assert.equal(await digitalCertificate.balanceOf(account.address), '50');
+
+            assert.isTrue(await universalReceiverDelegate.containsAddress(erc777.address));
+            assert.isTrue(await universalReceiverDelegate.containsAddress(digitalCertificate.address));
+
+        });
+        it("Transfer ERC777 and LSP4 from LSP3 account with delegate to UniversalReceiverAddressStore", async () => {
+            const owner = accounts[2];
+            const account = await LSP3Account.new(owner, {from: owner});
+            const universalReceiverDelegate = await UniversalReceiverAddressStore.new(account.address, {from: owner});
+
+            // set account2 as new receiver for account1
+            await account.setData(UNIVERSALRECEIVER_KEY, universalReceiverDelegate.address, {from: owner});
+
+            let tokenOwner = accounts[2];
+
+            let erc777 = await ERC777UniversalReceiver.new("MyToken", "TKN", [tokenOwner]);
+            let digitalCertificate = await DigitalCertificateFungible.new(tokenOwner, "MyDigitalCloth", "DIGICLOTH01", []);
+
+            await erc777.mint(tokenOwner, '100', {from: tokenOwner});
+            await digitalCertificate.mint(tokenOwner, '100', {from: tokenOwner});
+
+            assert.equal(await erc777.balanceOf(account.address), '0');
+            assert.equal(await digitalCertificate.balanceOf(account.address), '0');
+
+            await erc777.send(account.address, '50', "0x", {from: tokenOwner});
+            await erc777.transfer(account.address, '50', {from: tokenOwner});
+            await digitalCertificate.send(account.address, '50', "0x", {from: tokenOwner});
+            await digitalCertificate.transfer(account.address, '50', {from: tokenOwner});
+
+            assert.equal(await erc777.balanceOf(account.address), '100');
+            assert.equal(await digitalCertificate.balanceOf(account.address), '100');
 
             assert.isTrue(await universalReceiverDelegate.containsAddress(erc777.address));
             assert.isTrue(await universalReceiverDelegate.containsAddress(digitalCertificate.address));
 
         });
         it("Transfer from ERC777 and LSP4 to account and delegate to UniversalReceiverAddressStore", async () => {
+            const OPERATION_CALL = 0x0;
             const owner = accounts[2];
             const account = await LSP3Account.new(owner, {from: owner});
             const universalReceiverDelegate = await UniversalReceiverAddressStore.new(account.address, {from: owner});
@@ -479,22 +511,28 @@ contract("LSP3Account", accounts => {
             let erc777 = await ERC777UniversalReceiver.new("MyToken", "TKN", [tokenOwner]);
             let digitalCertificate = await DigitalCertificateFungible.new(tokenOwner, "MyDigitalCloth", "DIGICLOTH01", []);
 
-            await erc777.mint(tokenOwner, '100', {from: tokenOwner});
-            await digitalCertificate.mint(tokenOwner, '100', {from: tokenOwner});
-
-            assert.equal(await erc777.balanceOf(account.address), '0');
-            assert.equal(await digitalCertificate.balanceOf(account.address), '0');
-
-            await erc777.send(account.address, '50', "0x", {from: tokenOwner});
-            await erc777.transfer(account.address, '50', {from: tokenOwner});
-            await digitalCertificate.send(account.address, '50', "0x", {from: tokenOwner});
-            await digitalCertificate.transfer(account.address, '50', {from: tokenOwner});
+            await erc777.mint(account.address, '100', {from: tokenOwner});
+            await digitalCertificate.mint(account.address, '100', {from: tokenOwner});
 
             assert.equal(await erc777.balanceOf(account.address), '100');
             assert.equal(await digitalCertificate.balanceOf(account.address), '100');
 
-            assert.isTrue(await universalReceiverDelegate.containsAddress(erc777.address));
-            assert.isTrue(await universalReceiverDelegate.containsAddress(digitalCertificate.address));
+            let abi;
+            abi = erc777.contract.methods.send(accounts[4], '50', "0x").encodeABI();
+            await account.execute(OPERATION_CALL, erc777.address, 0, abi, {from: owner});
+            abi = erc777.contract.methods.transfer(accounts[4], '50').encodeABI();
+            await account.execute(OPERATION_CALL, erc777.address, 0, abi, {from: owner});
+
+            abi = digitalCertificate.contract.methods.send(accounts[4], '50', "0x").encodeABI();
+            await account.execute(OPERATION_CALL, digitalCertificate.address, 0, abi, {from: owner});
+            abi = digitalCertificate.contract.methods.transfer(accounts[4], '50').encodeABI();
+            await account.execute(OPERATION_CALL, digitalCertificate.address, 0, abi, {from: owner});
+
+            assert.equal((await erc777.balanceOf(account.address)).toString(), '0');
+            assert.equal((await digitalCertificate.balanceOf(account.address)).toString(), '0');
+
+            assert.equal((await erc777.balanceOf(accounts[4])).toString(), '100');
+            assert.equal((await digitalCertificate.balanceOf(accounts[4])).toString(), '100');
 
         });
     }); //Context Universal Receiver
