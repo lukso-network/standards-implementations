@@ -23,8 +23,31 @@ contract UniversalReceiverAddressStore is ERC165, ILSP1Delegate, AddressRegistry
         _registerInterface(_INTERFACE_ID_LSP1DELEGATE);
     }
 
-    function universalReceiverDelegate(address sender, bytes32 typeId, bytes memory) external override returns (bytes32) {
-        require(msg.sender == account, 'Only the connected account call this function');
+
+    function addAddress(address _address)
+    public
+    override
+    onlyAccount
+    returns(bool)
+    {
+        return addressSet.add(_address);
+    }
+
+    function removeAddress(address _address)
+    public
+    override
+    onlyAccount
+    returns(bool)
+    {
+        return addressSet.remove(_address);
+    }
+
+    function universalReceiverDelegate(address sender, bytes32 typeId, bytes memory)
+    external
+    override
+    onlyAccount
+    returns (bytes32)
+    {
 //        require(typeId == _TOKENS_RECIPIENT_INTERFACE_HASH, 'UniversalReceiverDelegate: Type not supported');
 
         // store tokens only if received, DO NOT revert on _TOKENS_SENDER_INTERFACE_HASH
@@ -32,5 +55,11 @@ contract UniversalReceiverAddressStore is ERC165, ILSP1Delegate, AddressRegistry
             addAddress(sender);
 
         return typeId;
+    }
+
+    /* Modifers */
+    modifier onlyAccount() {
+        require(msg.sender == account, 'Only the connected account call this function');
+        _;
     }
 }
