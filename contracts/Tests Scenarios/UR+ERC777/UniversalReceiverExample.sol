@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: CC0-1.0
-pragma solidity 0.6.10;
+pragma solidity ^0.6.10;
 
 import "../../_LSPs/ILSP1_UniversalReceiver.sol";
 

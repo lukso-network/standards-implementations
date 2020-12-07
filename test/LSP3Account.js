@@ -161,8 +161,6 @@ contract("LSP3Account", accounts => {
             let value = web3.utils.utf8ToHex('https://www.google.com/url?sa=i&url=https%3A%2F%2Ftwitter.com%2Ffeindura&psig=AOvVaw21YL9Wg3jSaEXMHyITcWDe&ust=1593272505347000&source=images&cd=vfe&ved=0CAIQjRxqFwoTCKD-guDon-oCFQAAAAAdAAAAABAD');
             await account.setData(key, value, {from: owner});
 
-            // console.log(value.length, value);
-
             assert.equal(await account.getData(key), value);
         });
         it("Store 32 bytes item 6", async () => {
@@ -189,6 +187,28 @@ contract("LSP3Account", accounts => {
 
             let keys = await account.allDataKeys();
             assert.equal(keys.length, 7);
+
+            console.log('Stored keys', keys);
+        });
+        it("Store multiple 32 bytes item 8-10", async () => {
+            let keys = [];
+            let values = [];
+            // increase
+            count++
+            for (let i = 8; i <= 10; i++) {
+                keys.push(web3.utils.numberToHex(count++));
+                values.push(web3.utils.numberToHex(count + 1000));
+            }
+            await account.setDataMultiple(keys, values, {from: owner});
+            console.log(await account.getDataMultiple(keys))
+            assert.deepEqual(await account.getDataMultiple(keys), values);
+        });
+        it("dataCount should be 10", async () => {
+            // 7 because the ERC725Type ios already set by the ERC725Account implementation
+            assert.equal(await account.dataCount(), 10);
+
+            let keys = await account.allDataKeys();
+            assert.equal(keys.length, 10);
 
             console.log('Stored keys', keys);
         });
@@ -234,6 +254,15 @@ contract("LSP3Account", accounts => {
 
             await expectRevert(
                 account.setData(key, data, {from: newOwner}),
+                "Ownable: caller is not the owner"
+            );
+        });
+        it("Fails when non-owner sets data multiple", async () => {
+            const key = web3.utils.asciiToHex("Important Data");
+            const data = web3.utils.asciiToHex("Important Data");
+
+            await expectRevert(
+                account.setDataMultiple([key], [data], {from: newOwner}),
                 "Ownable: caller is not the owner"
             );
         });
@@ -308,7 +337,7 @@ contract("LSP3Account", accounts => {
             // console.log(receipt.logs[0].args);
 
             assert.equal(receipt.logs[1].event, 'ContractCreated');
-            assert.equal(receipt.logs[1].args.contractAddress, '0x7ffE4e82BD27654D31f392215b6b145655efe659');
+            assert.equal(receipt.logs[1].args.contractAddress, '0xc6aFf31a98cB525c6b849E0d76cc2693F4BbccD9');
         });
 
         it("Allow account to receive native tokens", async () => {

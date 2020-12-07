@@ -27,7 +27,7 @@
     "eth-create2": "^1.0.1",
     "solidity-bytes-utils": "0.0.8",
     "solidity-create2-deployer": "^0.4.0",
-    "truffle": "^5.1.55"
+    "truffle": "^5.1.56"
   },
   "devDependencies": {
     "@openzeppelin/cli": "^2.8.2",

@@ -6,6 +6,7 @@
  * @dev Implementation of the ERC725Account + LSP1 universalReceiver
  */
 pragma solidity ^0.6.0;
+pragma experimental ABIEncoderV2;
 
 // interfaces
 import "../_LSPs/ILSP1_UniversalReceiver.sol";
@@ -43,10 +44,34 @@ contract LSP3Account is ERC165, ERC725Account, ILSP1 {
         return dataKeys;
     }
 
+    function setDataMultiple(bytes32[] calldata _keys, bytes[] calldata _values)
+    public
+    onlyOwner
+    {
+        for (uint256 i = 0; i < _keys.length; i++) {
+            setData(_keys[i], _values[i]);
+        }
+    }
+
+    function getDataMultiple(bytes32[] calldata _keys)
+    public
+    view
+    returns(bytes[] memory)
+    {
+        uint256 length = _keys.length;
+        bytes[] memory values = new bytes[](length);
+
+        for (uint256 i=0; i < length; i++) {
+            values[i] = getData(_keys[i]);
+        }
+
+        return values;
+    }
+
     /* Public functions */
 
-    function setData(bytes32 _key, bytes memory _value)
-    external
+    function setData(bytes32 _key, bytes calldata _value)
+    public
     override
     onlyOwner
     {
@@ -64,7 +89,7 @@ contract LSP3Account is ERC165, ERC725Account, ILSP1 {
     * @param _typeId The type of transfer received
     * @param _data The data received
     */
-    function universalReceiver(bytes32 _typeId, bytes memory _data)
+    function universalReceiver(bytes32 _typeId, bytes calldata _data)
     external
     override
     virtual
