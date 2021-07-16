@@ -28,6 +28,9 @@ contract LSP4DigitalCertificate is Pausable, ERC725Y, ERC777UniversalReceiver {
     ERC725Y(newOwner)
     ERC777UniversalReceiver(name, symbol, defaultOperators)
     public {
+        // Add the key of the SupportedStandards:LSP4DigitalCertificate
+        dataKeys.push(0xeafec4d89fa9619884b6b89135626455000000000000000000000000abf0613c);
+        
         // set the owner as minter
         minter = newOwner;
     }
