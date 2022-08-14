@@ -21,7 +21,7 @@
   },
   "homepage": "https://github.com/lukso-network/standards-scenarios#readme",
   "dependencies": {
-    "@openzeppelin/contracts": "^3.3.0",
+    "@openzeppelin/contracts": "^4.7.2",
     "@openzeppelin/contracts-ethereum-package": "^3.0.0",
     "erc725": "^1.0.0-beta.17",
     "eth-create2": "^1.0.1",
